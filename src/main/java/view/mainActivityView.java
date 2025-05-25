@@ -90,17 +90,92 @@ public class mainActivityView extends JFrame {
         }
         add(mainContentPanel, BorderLayout.CENTER);
 
-        // List selection listener
+        // List selection listener với xử lý sự kiện riêng cho từng tab
         menuList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                String selected = menuList.getSelectedValue().trim();
-                cardLayout.show(mainContentPanel, selected);
-                menuList.repaint(); // cập nhật màu sắc
+                String selected = menuList.getSelectedValue();
+                if (selected != null) {
+                    String key = selected.trim();
+                    
+                    // Chuyển tab
+                    cardLayout.show(mainContentPanel, key);
+                    
+                    // Xử lý sự kiện riêng cho từng tab
+                    handleTabSelection(selected);
+                    
+                    menuList.repaint(); // cập nhật màu sắc
+                }
             }
         });
 
         // Mặc định chọn tab đầu tiên
         menuList.setSelectedIndex(0);
+    }
+
+    // Phương thức xử lý sự kiện cho từng tab
+    private void handleTabSelection(String selectedTab) {
+        System.out.println("Đã chuyển đến tab: " + selectedTab);
+        
+        switch (selectedTab.trim()) {
+            case "🏠 Trang Chủ":
+                handleHomeTab();
+                break;
+            case "👤 Hồ Sơ Nhân Sự":
+                handleEmployeeProfileTab();
+                break;
+            case "🏢 Phòng Ban":
+                handleDepartmentTab();
+                break;
+            case "💼 Chức Vụ":
+                handlePositionTab();
+                break;
+            case "💰 Lương & Phụ Cấp":
+                handleSalaryTab();
+                break;
+            case "📝 Hợp Đồng":
+                handleContractTab();
+                break;
+            case "🕒 Nghỉ Phép & Nghỉ Việc":
+                handleLeaveTab();
+                break;
+            default:
+                System.out.println("Tab không xác định: " + selectedTab);
+        }
+    }
+
+    // Các phương thức xử lý riêng cho từng tab
+    private void handleHomeTab() {
+        System.out.println("=== XỬ LÝ TAB TRANG CHỦ ===");
+    }
+
+    private void handleEmployeeProfileTab() {
+        System.out.println("=== XỬ LÝ TAB HỒ SƠ NHÂN SỰ ===");
+
+    }
+
+    private void handleDepartmentTab() {
+        System.out.println("=== XỬ LÝ TAB PHÒNG BAN ===");
+
+    }
+
+    private void handlePositionTab() {
+        System.out.println("=== XỬ LÝ TAB CHỨC VỤ ===");
+ 
+    }
+
+    private void handleSalaryTab() {
+        System.out.println("=== XỬ LÝ TAB LƯƠNG & PHỤ CẤP ===");
+
+    }
+
+    private void handleContractTab() {
+        System.out.println("=== XỬ LÝ TAB HỢP ĐỒNG ===");
+
+    }
+
+    private void handleLeaveTab() {
+        System.out.println("=== XỬ LÝ TAB NGHỈ PHÉP & NGHỈ VIỆC ===");
+
     }
 
     private JPanel createPanel(String labelText) {
@@ -133,6 +208,26 @@ public class mainActivityView extends JFrame {
             }
 
             return label;
+        }
+    }
+    
+    // Phương thức công khai để lấy panel hiện tại (nếu cần)
+    public JPanel getCurrentPanel() {
+        String selectedItem = menuList.getSelectedValue();
+        if (selectedItem != null) {
+            return contentPanels.get(selectedItem.trim());
+        }
+        return null;
+    }
+    
+    // Phương thức để chuyển tab từ code
+    public void switchToTab(String tabName) {
+        for (int i = 0; i < menuModel.getSize(); i++) {
+            String item = menuModel.getElementAt(i);
+            if (item.contains(tabName)) {
+                menuList.setSelectedIndex(i);
+                break;
+            }
         }
     }
 
