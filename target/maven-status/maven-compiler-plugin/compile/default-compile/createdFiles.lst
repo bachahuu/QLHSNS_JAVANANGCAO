@@ -1,10 +1,11 @@
 model\Connect.class
-view\EmployeeProfilePanel$1.class
-view\EmployeeProfilePanel$ButtonEditor.class
+model\NhanSuModel.class
+view\EmployeeProfile$1.class
+view\EmployeeProfile$ButtonRenderer.class
 view\mainActivityView$MenuRenderer.class
-view\testView.class
+view\EmployeeProfile.class
 view\mainActivityView.class
 controller\testController.class
 com\mycompany\quanlyhosonhansu\QuanLyHoSoNhanSu.class
-view\EmployeeProfilePanel$ButtonRenderer.class
-view\EmployeeProfilePanel.class
+controller\nhanSuController.class
+view\EmployeeProfile$ButtonEditor.class

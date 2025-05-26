@@ -21,6 +21,7 @@ public class mainActivityView extends JFrame {
 
     private final String[] menuItems = {
         "🏠 Trang Chủ",
+        "👤 Quản Lý Tài Khoản", // Di chuyển xuống ngay dưới Trang Chủ
         "👤 Hồ Sơ Nhân Sự",
         "🏢 Phòng Ban",
         "💼 Chức Vụ",
@@ -120,6 +121,9 @@ public class mainActivityView extends JFrame {
             case "🏠 Trang Chủ":
                 handleHomeTab();
                 break;
+            case "👤 Quản Lý Tài Khoản": // Thêm xử lý cho Quản Lý Tài Khoản
+                handleAccountTab();
+                break;
             case "👤 Hồ Sơ Nhân Sự":
                 handleEmployeeProfileTab();
                 break;
@@ -147,11 +151,14 @@ public class mainActivityView extends JFrame {
     private void handleHomeTab() {
         System.out.println("=== XỬ LÝ TAB TRANG CHỦ ===");
     }
+        private void handleAccountTab() {
+        System.out.println("=== XỬ LÝ TAB QUẢN LÝ TÀI KHOẢN ===");
+    }
 
     private void handleEmployeeProfileTab() {
         System.out.println("=== XỬ LÝ TAB HỒ SƠ NHÂN SỰ ===");
         String key = "👤 Hồ Sơ Nhân Sự".trim();
-        EmployeeProfilePanel employeeProfilePanel = new EmployeeProfilePanel();
+        EmployeeProfile employeeProfilePanel = new EmployeeProfile();
         contentPanels.put(key, employeeProfilePanel); // Cập nhật panel cho tab này
         mainContentPanel.removeAll(); // Xóa các panel cũ
         for (String item : menuItems) {
@@ -197,6 +204,8 @@ public class mainActivityView extends JFrame {
         panel.setBackground(Color.WHITE);
         return panel;
     }
+
+
 
     // Tùy chỉnh màu sắc item menu
     private class MenuRenderer extends DefaultListCellRenderer {
