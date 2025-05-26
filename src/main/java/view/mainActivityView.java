@@ -150,6 +150,17 @@ public class mainActivityView extends JFrame {
 
     private void handleEmployeeProfileTab() {
         System.out.println("=== XỬ LÝ TAB HỒ SƠ NHÂN SỰ ===");
+        String key = "👤 Hồ Sơ Nhân Sự".trim();
+        EmployeeProfilePanel employeeProfilePanel = new EmployeeProfilePanel();
+        contentPanels.put(key, employeeProfilePanel); // Cập nhật panel cho tab này
+        mainContentPanel.removeAll(); // Xóa các panel cũ
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
+        }
+        cardLayout.show(mainContentPanel, key); // Hiển thị panel mới
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
 
     }
 
