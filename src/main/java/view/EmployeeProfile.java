@@ -4,6 +4,8 @@
  */
 package view;
 
+import controller.ChucVuController;
+import controller.PhongBanController;
 import controller.nhanSuController;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -497,11 +499,23 @@ public class EmployeeProfile extends JPanel {
             JLabel maPhongBanLabel = new JLabel("Mã phòng ban:");
             maPhongBanLabel.setFont(labelFont);
             dialog.add(maPhongBanLabel);
-            // TODO: Load danh sách phòng ban từ database
+            //  Load danh sách phòng ban từ database
             JComboBox<String> maPhongBanComboBox = new JComboBox<>();
             maPhongBanComboBox.setFont(fieldFont);
-            // Tạm thời hiển thị mã phòng ban hiện tại
-            maPhongBanComboBox.addItem(selectedNhanSu.getMaPhongBan() + " - (Sẽ load từ DB)");
+            
+            PhongBanController phongBanController = new PhongBanController();
+            List<String> phongbanlist = phongBanController.getPhongBanDisplayList();
+            for (String string : phongbanlist) {
+                maPhongBanComboBox.addItem(string);
+            }
+            int selectedMaPhongBan = selectedNhanSu.getMaPhongBan();
+            for (int i = 0; i < maPhongBanComboBox.getItemCount(); i++) {
+                String item = maPhongBanComboBox.getItemAt(i);
+                if (item.startsWith(selectedMaPhongBan + " -")) {
+                    maPhongBanComboBox.setSelectedIndex(i);
+                    break;
+                }
+            }
             dialog.add(maPhongBanComboBox);
 
             JLabel maChucVuLabel = new JLabel("Mã chức vụ:");
@@ -510,8 +524,20 @@ public class EmployeeProfile extends JPanel {
             // TODO: Load danh sách chức vụ từ database
             JComboBox<String> maChucVuComboBox = new JComboBox<>();
             maChucVuComboBox.setFont(fieldFont);
-            // Tạm thời hiển thị mã chức vụ hiện tại
-            maChucVuComboBox.addItem(selectedNhanSu.getMaChucVu() + " - (Sẽ load từ DB)");
+            // load chuc vu tu database
+            ChucVuController chucVuController = new ChucVuController();
+            List<String> chucvulist = chucVuController.getChucVuDisplayList();
+            for (String string : chucvulist) {
+                maChucVuComboBox.addItem(string);
+            }
+            int selectedMaChucVu = selectedNhanSu.getMaChucVu();
+            for (int i = 0; i < maChucVuComboBox.getItemCount(); i++) {
+                String item = maChucVuComboBox.getItemAt(i);
+                if (item.startsWith(selectedMaChucVu + " -")) {
+                    maChucVuComboBox.setSelectedIndex(i);
+                    break;
+                }
+            }
             dialog.add(maChucVuComboBox);
 
             JLabel ngayVaoLamLabel = new JLabel("Ngày vào làm:");
@@ -519,7 +545,7 @@ public class EmployeeProfile extends JPanel {
             dialog.add(ngayVaoLamLabel);
             JTextField ngayVaoLamField = new JTextField(selectedNhanSu.getNgayVaoLam() != null ? selectedNhanSu.getNgayVaoLam().toString() : "");
             ngayVaoLamField.setFont(fieldFont);
-            ngayVaoLamField.setEditable(false);
+            ngayVaoLamField.setEditable(true);
             dialog.add(ngayVaoLamField);
 
             JLabel tinhTrangLabel = new JLabel("Tình trạng:");
