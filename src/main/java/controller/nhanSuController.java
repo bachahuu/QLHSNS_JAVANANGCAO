@@ -6,6 +6,7 @@ package controller;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,5 +56,103 @@ public class nhanSuController {
             e.printStackTrace();
         }
          return list;
+    }
+     public boolean insertNhanVien(NhanSuModel nhanSu) {
+         Connection conn = null;
+        Statement stmt = null;
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+                // Chuẩn bị các giá trị, xử lý null
+                String maSo = nhanSu.getMaSo() != null ? "'" + nhanSu.getMaSo() + "'" : "''";
+                String hoTen = nhanSu.getHoTen() != null ? "'" + nhanSu.getHoTen() + "'" : "''";
+                String gioiTinh = nhanSu.getGioiTinh() != null ? "'" + nhanSu.getGioiTinh() + "'" : "''";
+                String ngaySinh = nhanSu.getNgaySinh() != null ? "'" + nhanSu.getNgaySinh().toString() + "'" : "NULL";
+                String diaChi = nhanSu.getDiaChi() != null ? "'" + nhanSu.getDiaChi() + "'" : "''";
+                String soDienThoai = nhanSu.getSoDienThoai() != null ? "'" + nhanSu.getSoDienThoai() + "'" : "''";
+                String email = nhanSu.getEmail() != null ? "'" + nhanSu.getEmail() + "'" : "''";
+                String trinhDoHocVan = nhanSu.getTrinhDoHocVan() != null ? "'" + nhanSu.getTrinhDoHocVan() + "'" : "''";
+                String maPhongBan = String.valueOf(nhanSu.getMaPhongBan());
+                String maChucVu = String.valueOf(nhanSu.getMaChucVu());
+                String ngayVaoLam = nhanSu.getNgayVaoLam() != null ? "'" + nhanSu.getNgayVaoLam().toString() + "'" : "NULL";
+                String tinhTrang = nhanSu.getTinhTrang() != null ? "'" + nhanSu.getTinhTrang() + "'" : "'Dang_lam'";
+
+                // Câu lệnh SQL nối chuỗi
+                String sql = "INSERT INTO nhan_vien (ma_so, ho_ten, ngay_sinh, gioi_tinh, dia_chi, so_dien_thoai, email, trinh_do_hoc_van, ma_phong_ban, ma_chuc_vu, ngay_vao_lam, tinh_trang) VALUES (" +
+                             maSo + ", " +
+                             hoTen + ", " +
+                             ngaySinh + ", " +
+                             gioiTinh + ", " +
+                             diaChi + ", " +
+                             soDienThoai + ", " +
+                             email + ", " +
+                             trinhDoHocVan + ", " +
+                             maPhongBan + ", " +
+                             maChucVu + ", " +
+                             ngayVaoLam + ", " +
+                             tinhTrang + ")";
+
+                stmt = conn.createStatement();
+                int rows = stmt.executeUpdate(sql);
+                
+                // Đóng kết nối và statement
+                stmt.close();
+                conn.close();
+                
+                return rows > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+     public boolean updateNhanVien(NhanSuModel nhanSu) {
+        try {
+            Connect mc = new Connect();
+            Connection conn = mc.getConnection();
+            Statement stmt = conn.createStatement();
+
+            String sql = "UPDATE nhan_vien SET " +
+                        "ho_ten = '" + nhanSu.getHoTen() + "', " +
+                        "ngay_sinh = '" + nhanSu.getNgaySinh() + "', " +
+                        "gioi_tinh = '" + nhanSu.getGioiTinh() + "', " +
+                        "dia_chi = '" + nhanSu.getDiaChi() + "', " +
+                        "so_dien_thoai = '" + nhanSu.getSoDienThoai() + "', " +
+                        "email = '" + nhanSu.getEmail() + "', " +
+                        "trinh_do_hoc_van = '" + nhanSu.getTrinhDoHocVan() + "', " +
+                        "ma_phong_ban = " + nhanSu.getMaPhongBan() + ", " +
+                        "ma_chuc_vu = " + nhanSu.getMaChucVu() + ", " + 
+                        "ngay_vao_lam = '" + nhanSu.getNgayVaoLam() + "', " +
+                        "tinh_trang = '" + nhanSu.getTinhTrang() + "' " +
+                        "WHERE ma_nhan_vien = " + nhanSu.getMaNhanVien();
+
+            int result = stmt.executeUpdate(sql);
+            conn.close();
+
+            return result > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+     
+    }
+     public void delete(int id) {
+        try {
+           Connect mc = new Connect();
+           Connection conn = mc.getConnection();
+           Statement stmt = conn.createStatement();
+             String sql = "DELETE FROM nhan_vien WHERE ma_nhan_vien = " + id;
+             int result = stmt.executeUpdate(sql);
+             if (result > 0) {
+                    System.out.println("Xóa thành công user có id = " + id);
+                } else {
+                    System.out.println("Không tìm thấy user để xóa.");
+                }
+             conn.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
     }
 }

@@ -20,7 +20,7 @@ import java.util.List;
 import model.NhanSuModel;
 
 /**
- * @author Grok
+ * @author Windows
  */
 public class EmployeeProfile extends JPanel {
     private JTextField searchField;
@@ -31,6 +31,7 @@ public class EmployeeProfile extends JPanel {
     private DefaultTableModel tableModel;
     private JButton addButton;
     private nhanSuController nhansu;
+    private NhanSuModel selectedNhanSu;
 
     public EmployeeProfile() {
         setLayout(new BorderLayout());
@@ -104,7 +105,7 @@ public class EmployeeProfile extends JPanel {
         //fill dữ liệu từ database
         loadDataFromDatabase();
         // Sample data (replace with actual data in a real application)
-        addSampleData();
+        setupAddButtonListener();
 
         employeeTable = new JTable(tableModel);
         employeeTable.setRowHeight(50);
@@ -147,7 +148,18 @@ public class EmployeeProfile extends JPanel {
             tableModel.addRow(row);
         }
     }
-    private void addSampleData() {
+    // Method để refresh lại dữ liệu bảng
+    private void refreshTableData() {
+        // Xóa tất cả dữ liệu hiện tại
+        tableModel.setRowCount(0);
+        
+        // Load lại dữ liệu từ database
+        loadDataFromDatabase();
+    }
+    private void setupAddButtonListener() {
+        addButton.addActionListener(e -> {
+            insertDetailDialog();
+        });
     }
     
     // Phương thức chung để tạo panel chứa các nút
@@ -213,6 +225,257 @@ public class EmployeeProfile extends JPanel {
         }
         return icon; // Trả về icon gốc nếu không thể resize
     }
+    private void insertDetailDialog(){
+            // Tạo dialog
+            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfile.this), "Chi tiết nhân sự", true);
+            dialog.setLayout(new GridLayout(13, 2, 15, 15)); // 13 hàng (12 trường + 1 nút Quay lại), 2 cột (label + textfield)
+            dialog.setSize(600, 500);
+            dialog.setLocationRelativeTo(EmployeeProfile.this);
+            
+
+            // Font chữ lớn hơn
+            Font labelFont = new Font("Arial", Font.PLAIN, 16);
+            Font fieldFont = new Font("Arial", Font.PLAIN, 16);
+
+            // Thêm các thành phần
+            JLabel maNhanVienLabel = new JLabel("Mã nhân viên:");
+            maNhanVienLabel.setFont(labelFont);
+            dialog.add(maNhanVienLabel);
+            JTextField maNhanVienField = new JTextField();
+            maNhanVienField.setFont(fieldFont);
+            maNhanVienField.setEditable(true);
+            dialog.add(maNhanVienField);
+
+            JLabel hoTenLabel = new JLabel("Họ và tên:");
+            hoTenLabel.setFont(labelFont);
+            dialog.add(hoTenLabel);
+            JTextField hoTenField = new JTextField();
+            hoTenField.setFont(fieldFont);
+            hoTenField.setEditable(true);
+            dialog.add(hoTenField);
+
+            JLabel gioiTinhLabel = new JLabel("Giới tính:");
+            gioiTinhLabel.setFont(labelFont);
+            dialog.add(gioiTinhLabel);
+             String[] gioiTinhOptions = {"Nam", "Nu"};
+            JComboBox<String> gioiTinhComboBox = new JComboBox<>(gioiTinhOptions);
+            gioiTinhComboBox.setFont(fieldFont);
+            gioiTinhComboBox.setSelectedIndex(0);
+            dialog.add(gioiTinhComboBox);
+
+            JLabel ngaySinhLabel = new JLabel("Ngày sinh:");
+            ngaySinhLabel.setFont(labelFont);
+            dialog.add(ngaySinhLabel);
+            JTextField ngaySinhField = new JTextField();
+            ngaySinhField.setFont(fieldFont);
+            ngaySinhField.setEditable(true);
+            dialog.add(ngaySinhField);
+
+            JLabel diaChiLabel = new JLabel("Địa chỉ:");
+            diaChiLabel.setFont(labelFont);
+            dialog.add(diaChiLabel);
+            JTextField diaChiField = new JTextField();
+            diaChiField.setFont(fieldFont);
+            diaChiField.setEditable(true);
+            dialog.add(diaChiField);
+
+            JLabel soDienThoaiLabel = new JLabel("Số điện thoại:");
+            soDienThoaiLabel.setFont(labelFont);
+            dialog.add(soDienThoaiLabel);
+            JTextField soDienThoaiField = new JTextField();
+            soDienThoaiField.setFont(fieldFont);
+            soDienThoaiField.setEditable(true);
+            dialog.add(soDienThoaiField);
+
+            JLabel emailLabel = new JLabel("Email:");
+            emailLabel.setFont(labelFont);
+            dialog.add(emailLabel);
+            JTextField emailField = new JTextField();
+            emailField.setFont(fieldFont);
+            emailField.setEditable(true);
+            dialog.add(emailField);
+
+            JLabel trinhDoHocVanLabel = new JLabel("Trình độ học vấn:");
+            trinhDoHocVanLabel.setFont(labelFont);
+            dialog.add(trinhDoHocVanLabel);
+            String[] trinhDoOptions = {"Dai_hoc", "Cao_dang", "Tot_nghiep_cap_3"};
+            JComboBox<String> trinhDoHocVanComboBox = new JComboBox<>(trinhDoOptions);
+            trinhDoHocVanComboBox.setFont(fieldFont);
+            trinhDoHocVanComboBox.setSelectedIndex(0);
+            dialog.add(trinhDoHocVanComboBox);
+
+            JLabel maPhongBanLabel = new JLabel("Mã phòng ban:");
+            maPhongBanLabel.setFont(labelFont);
+            dialog.add(maPhongBanLabel);
+            //  Load danh sách phòng ban từ database
+            JComboBox<String> maPhongBanComboBox = new JComboBox<>();
+            maPhongBanComboBox.setFont(fieldFont);
+            
+            PhongBanController phongBanController = new PhongBanController();
+            List<String> phongbanlist = phongBanController.getPhongBanDisplayList();
+            if (phongbanlist.isEmpty()) {
+                maPhongBanComboBox.addItem("Không có phòng ban");
+                maPhongBanComboBox.setEnabled(false);
+            } else {
+                for (String string : phongbanlist) {
+                    maPhongBanComboBox.addItem(string);
+                }
+                maPhongBanComboBox.setSelectedIndex(0);
+            }
+            dialog.add(maPhongBanComboBox);
+
+            JLabel maChucVuLabel = new JLabel("Mã chức vụ:");
+            maChucVuLabel.setFont(labelFont);
+            dialog.add(maChucVuLabel);
+            // TODO: Load danh sách chức vụ từ database
+            JComboBox<String> maChucVuComboBox = new JComboBox<>();
+            maChucVuComboBox.setFont(fieldFont);
+            // load chuc vu tu database
+            ChucVuController chucVuController = new ChucVuController();
+            List<String> chucvulist = chucVuController.getChucVuDisplayList();
+            if (chucvulist.isEmpty()) {
+                maChucVuComboBox.addItem("Không có chức vụ");
+                maChucVuComboBox.setEnabled(false);
+            } else {
+                for (String string : chucvulist) {
+                    maChucVuComboBox.addItem(string);
+                }
+                maChucVuComboBox.setSelectedIndex(0);
+            }
+            dialog.add(maChucVuComboBox);
+
+            JLabel ngayVaoLamLabel = new JLabel("Ngày vào làm:");
+            ngayVaoLamLabel.setFont(labelFont);
+            dialog.add(ngayVaoLamLabel);
+            JTextField ngayVaoLamField = new JTextField();
+            ngayVaoLamField.setFont(fieldFont);
+            ngayVaoLamField.setToolTipText("Nhập ngày vào làm theo định dạng yyyy-MM-dd");
+            ngayVaoLamField.setEditable(true);
+            dialog.add(ngayVaoLamField);
+
+            JLabel tinhTrangLabel = new JLabel("Tình trạng:");
+            tinhTrangLabel.setFont(labelFont);
+            dialog.add(tinhTrangLabel);
+            String[] tinhTrangOptions = {"Dang_lam", "Da_nghi"};
+            JComboBox<String> tinhTrangComboBox = new JComboBox<>(tinhTrangOptions);
+            tinhTrangComboBox.setFont(fieldFont);
+            tinhTrangComboBox.setSelectedItem("Dang_lam");
+            dialog.add(tinhTrangComboBox);
+            
+            JButton saveButton = new JButton("Lưu thay đổi");
+            saveButton.setFont(new Font("Arial", Font.PLAIN, 16));
+            saveButton.addActionListener(e -> {
+              try {
+                    // Lấy dữ liệu từ các 
+                    String maSo = maNhanVienField.getText().trim();
+                    String hoTen = hoTenField.getText().trim();
+                    String gioiTinh = (String) gioiTinhComboBox.getSelectedItem();
+                    String ngaySinh = ngaySinhField.getText().trim();
+                    String diaChi = diaChiField.getText().trim();
+                    String soDienThoai = soDienThoaiField.getText().trim();
+                    String email = emailField.getText().trim();
+                    String trinhDoHocVan = (String) trinhDoHocVanComboBox.getSelectedItem();
+                    String ngayVaoLam = ngayVaoLamField.getText().trim();
+                    String tinhTrang = (String) tinhTrangComboBox.getSelectedItem();
+
+                    // Lấy mã phòng ban (format: "1 - Tên phòng ban")
+                    String selectedPhongBan = (String) maPhongBanComboBox.getSelectedItem();
+                    int maPhongBan = 0;
+                    if (!selectedPhongBan.equals("Không có phòng ban")) {
+                        maPhongBan = Integer.parseInt(selectedPhongBan.split(" - ")[0]);
+                    }
+
+                    // Lấy mã chức vụ (format: "1 - Tên chức vụ")
+                    String selectedChucVu = (String) maChucVuComboBox.getSelectedItem();
+                    int maChucVu = 0;
+                    if (!selectedChucVu.equals("Không có chức vụ")) {
+                        maChucVu = Integer.parseInt(selectedChucVu.split(" - ")[0]);
+                    }
+
+                    // Xác thực dữ liệu
+                    if (hoTen.isEmpty()) {
+                        JOptionPane.showMessageDialog(dialog, "Họ tên không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (email.isEmpty() || !email.contains("@")) {
+                        JOptionPane.showMessageDialog(dialog, "Email không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (soDienThoai.isEmpty() || !soDienThoai.matches("\\d{10,11}")) {
+                        JOptionPane.showMessageDialog(dialog, "Số điện thoại phải có 10-11 chữ số!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (maPhongBan == 0) {
+                        JOptionPane.showMessageDialog(dialog, "Vui lòng chọn phòng ban hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (maChucVu == 0) {
+                        JOptionPane.showMessageDialog(dialog, "Vui lòng chọn chức vụ hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Tạo đối tượng NhanSuModel
+                    NhanSuModel newNhanSu = new NhanSuModel();
+                    newNhanSu.setMaSo(maSo);
+                    newNhanSu.setHoTen(hoTen);
+                    newNhanSu.setGioiTinh(gioiTinh);
+                    newNhanSu.setDiaChi(diaChi);
+                    newNhanSu.setSoDienThoai(soDienThoai);
+                    newNhanSu.setEmail(email);
+                    newNhanSu.setTrinhDoHocVan(trinhDoHocVan);
+                    newNhanSu.setMaPhongBan(maPhongBan);
+                    newNhanSu.setMaChucVu(maChucVu);
+                    newNhanSu.setTinhTrang(tinhTrang);
+
+                    // Xử lý ngày sinh
+                    if (!ngaySinh.isEmpty()) {
+                        try {
+                            java.sql.Date parsedNgaySinh = java.sql.Date.valueOf(ngaySinh);
+                            newNhanSu.setNgaySinh(parsedNgaySinh);
+                        } catch (IllegalArgumentException ex) {
+                            JOptionPane.showMessageDialog(dialog, "Ngày sinh không đúng định dạng (yyyy-MM-dd)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+
+                    // Xử lý ngày vào làm
+                    if (!ngayVaoLam.isEmpty()) {
+                        try {
+                            java.sql.Date parsedNgayVaoLam = java.sql.Date.valueOf(ngayVaoLam);
+                            newNhanSu.setNgayVaoLam(parsedNgayVaoLam);
+                        } catch (IllegalArgumentException ex) {
+                            JOptionPane.showMessageDialog(dialog, "Ngày vào làm không đúng định dạng (yyyy-MM-dd)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+
+                    // Gọi hàm insertNhanVien từ nhanSuController
+                    boolean success = nhansu.insertNhanVien(newNhanSu);
+
+                    if (success) {
+                        JOptionPane.showMessageDialog(dialog, "Thêm nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                        refreshTableData(); // Làm mới bảng
+                        dialog.dispose(); // Đóng dialog
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "Thêm nhân viên thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(dialog, "Có lỗi xảy ra: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }      
+            });
+            dialog.add(saveButton);
+
+            // Nút Quay trở lại
+            JButton backButton = new JButton("Quay trở lại");
+            backButton.setFont(new Font("Arial", Font.PLAIN, 16));
+            backButton.addActionListener(e -> dialog.dispose());
+            dialog.add(backButton);
+
+            // Hiển thị dialog
+            dialog.setVisible(true);
+        }
 
   // Renderer cho cột "Thao tác"
     class ButtonRenderer implements TableCellRenderer {
@@ -243,8 +506,46 @@ public class EmployeeProfile extends JPanel {
                 e -> showDetailDialog(row),
                 e -> editDetailDialog(row),
                 e -> {
-                    JOptionPane.showMessageDialog(null, "Xóa nhân viên: " + tableModel.getValueAt(row, 0));
-                    fireEditingStopped();
+                            // Lấy mã số từ cột 0
+                        String maSo = (String) tableModel.getValueAt(row, 0);
+
+                        // Tìm NhanSuModel tương ứng
+                        List<NhanSuModel> nhanSuList = nhansu.getAll();
+                        NhanSuModel selectedNhanSu = null;
+                        for (NhanSuModel nhanSu : nhanSuList) {
+                            if (nhanSu.getMaSo().equals(maSo)) {
+                                selectedNhanSu = nhanSu;
+                                break;
+                            }
+                        }
+
+                        if (selectedNhanSu == null) {
+                            JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin nhân viên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            fireEditingStopped();
+                            return;
+                        }
+
+                        // Xác nhận xóa
+                        int confirm = JOptionPane.showConfirmDialog(
+                            null,
+                            "Bạn có chắc muốn xóa nhân viên: " + selectedNhanSu.getHoTen() + " (Mã: " + maSo + ")?",
+                            "Xác nhận xóa",
+                            JOptionPane.YES_NO_OPTION
+                        );
+
+                        if (confirm == JOptionPane.YES_OPTION) {
+                            try {
+                                // Gọi hàm delete
+                                nhansu.delete(selectedNhanSu.getMaNhanVien());
+                                JOptionPane.showMessageDialog(null, "Xóa nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                                refreshTableData(); // Làm mới bảng
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                    JOptionPane.showMessageDialog(null, "Xóa nhân viên thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                                }
+                        }
+
+                        fireEditingStopped();                   
                 }
             );
         }
@@ -405,7 +706,7 @@ public class EmployeeProfile extends JPanel {
              // Lấy mã nhân viên từ cột 0
             String maSo = (String) tableModel.getValueAt(row, 0);
             List<NhanSuModel> nhanSuList = nhansu.getAll();
-            NhanSuModel selectedNhanSu = null;
+            selectedNhanSu = null;
             for (NhanSuModel nhanSu : nhanSuList) {
                 if (nhanSu.getMaSo().equals(maSo)) {
                     selectedNhanSu = nhanSu;
@@ -449,7 +750,7 @@ public class EmployeeProfile extends JPanel {
             JLabel gioiTinhLabel = new JLabel("Giới tính:");
             gioiTinhLabel.setFont(labelFont);
             dialog.add(gioiTinhLabel);
-             String[] gioiTinhOptions = {"Nam", "Nữ"};
+             String[] gioiTinhOptions = {"Nam", "Nu"};
             JComboBox<String> gioiTinhComboBox = new JComboBox<>(gioiTinhOptions);
             gioiTinhComboBox.setFont(fieldFont);
             gioiTinhComboBox.setSelectedItem(selectedNhanSu.getGioiTinh());
@@ -490,7 +791,7 @@ public class EmployeeProfile extends JPanel {
             JLabel trinhDoHocVanLabel = new JLabel("Trình độ học vấn:");
             trinhDoHocVanLabel.setFont(labelFont);
             dialog.add(trinhDoHocVanLabel);
-            String[] trinhDoOptions = {"Trung học phổ thông", "Trung cấp", "Cao đẳng", "Đại học", "Thạc sĩ", "Tiến sĩ"};
+            String[] trinhDoOptions = {"Dai_hoc", "Cao_dang", "Tot_nghiep_cap_3"};
             JComboBox<String> trinhDoHocVanComboBox = new JComboBox<>(trinhDoOptions);
             trinhDoHocVanComboBox.setFont(fieldFont);
             trinhDoHocVanComboBox.setSelectedItem(selectedNhanSu.getTrinhDoHocVan());
@@ -551,7 +852,7 @@ public class EmployeeProfile extends JPanel {
             JLabel tinhTrangLabel = new JLabel("Tình trạng:");
             tinhTrangLabel.setFont(labelFont);
             dialog.add(tinhTrangLabel);
-            String[] tinhTrangOptions = {"Đang làm việc", "Nghỉ phép", "Thôi việc"};
+            String[] tinhTrangOptions = {"Dang_lam", "Da_nghi"};
             JComboBox<String> tinhTrangComboBox = new JComboBox<>(tinhTrangOptions);
             tinhTrangComboBox.setFont(fieldFont);
             tinhTrangComboBox.setSelectedItem(selectedNhanSu.getTinhTrang());
@@ -559,6 +860,102 @@ public class EmployeeProfile extends JPanel {
             
             JButton saveButton = new JButton("Lưu thay đổi");
             saveButton.setFont(new Font("Arial", Font.PLAIN, 16));
+            saveButton.addActionListener(e ->{
+                 try {
+                    // Lấy dữ liệu từ các component trong dialog
+                    String hoTen = hoTenField.getText().trim();
+                    String gioiTinh = (String) gioiTinhComboBox.getSelectedItem();
+                    String ngaySinh = ngaySinhField.getText().trim();
+                    String diaChi = diaChiField.getText().trim();
+                    String soDienThoai = soDienThoaiField.getText().trim();
+                    String email = emailField.getText().trim();
+                    String trinhDoHocVan = (String) trinhDoHocVanComboBox.getSelectedItem();
+                    String ngayVaoLam = ngayVaoLamField.getText().trim();
+                    String tinhTrang = (String) tinhTrangComboBox.getSelectedItem();
+
+                    // Lấy mã phòng ban từ ComboBox (format: "1 - Tên phòng ban")
+                    String selectedPhongBan = (String) maPhongBanComboBox.getSelectedItem();
+                    int maPhongBan = Integer.parseInt(selectedPhongBan.split(" - ")[0]);
+
+                    // Lấy mã chức vụ từ ComboBox (format: "1 - Tên chức vụ")
+                    String selectedChucVu = (String) maChucVuComboBox.getSelectedItem();
+                    int maChucVu = Integer.parseInt(selectedChucVu.split(" - ")[0]);
+
+                    // Validate dữ liệu
+                    if (hoTen.isEmpty()) {
+                        JOptionPane.showMessageDialog(dialog, "Họ tên không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    if (email.isEmpty() || !email.contains("@")) {
+                        JOptionPane.showMessageDialog(dialog, "Email không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    if (soDienThoai.isEmpty() || !soDienThoai.matches("\\d{10,11}")) {
+                        JOptionPane.showMessageDialog(dialog, "Số điện thoại phải có 10-11 chữ số!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Tạo object NhanSuModel với dữ liệu mới
+                    NhanSuModel updatedNhanSu = new NhanSuModel();
+                    updatedNhanSu.setMaNhanVien(selectedNhanSu.getMaNhanVien()); // ID không đổi
+                    updatedNhanSu.setMaSo(selectedNhanSu.getMaSo()); // Mã số không đổi
+                    updatedNhanSu.setHoTen(hoTen);
+                    updatedNhanSu.setGioiTinh(gioiTinh);
+                    updatedNhanSu.setDiaChi(diaChi);
+                    updatedNhanSu.setSoDienThoai(soDienThoai);
+                    updatedNhanSu.setEmail(email);
+                    updatedNhanSu.setTrinhDoHocVan(trinhDoHocVan);
+                    updatedNhanSu.setMaPhongBan(maPhongBan);
+                    updatedNhanSu.setMaChucVu(maChucVu);
+                    updatedNhanSu.setTinhTrang(tinhTrang);
+
+                    // Parse và set ngày sinh
+                    if (!ngaySinh.isEmpty()) {
+                        try {
+                            java.sql.Date parsedNgaySinh = java.sql.Date.valueOf(ngaySinh);
+                            updatedNhanSu.setNgaySinh(parsedNgaySinh);
+                        } catch (IllegalArgumentException ex) {
+                            JOptionPane.showMessageDialog(dialog, "Ngày sinh không đúng định dạng (yyyy-MM-dd)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+
+                    // Parse và set ngày vào làm
+                    if (!ngayVaoLam.isEmpty()) {
+                        try {
+                            java.sql.Date parsedNgayVaoLam = java.sql.Date.valueOf(ngayVaoLam);
+                            updatedNhanSu.setNgayVaoLam(parsedNgayVaoLam);
+                        } catch (IllegalArgumentException ex) {
+                            JOptionPane.showMessageDialog(dialog, "Ngày vào làm không đúng định dạng (yyyy-MM-dd)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+
+                    // Gọi method update trong controller
+                    boolean success = nhansu.updateNhanVien(updatedNhanSu);
+
+                    if (success) {
+                        JOptionPane.showMessageDialog(dialog, "Cập nhật thông tin nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+
+                        // Cập nhật lại dữ liệu trong bảng
+                        refreshTableData();
+
+                        // Đóng dialog
+                        dialog.dispose();
+
+                        // Dừng cell editing
+                        fireEditingStopped();
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "Cập nhật thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(dialog, "Có lỗi xảy ra: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            });
             dialog.add(saveButton);
 
             // Nút Quay trở lại
@@ -570,6 +967,7 @@ public class EmployeeProfile extends JPanel {
             // Hiển thị dialog
             dialog.setVisible(true);
         }
+        
     }
 }
  
