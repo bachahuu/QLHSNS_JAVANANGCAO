@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import model.ChucVuModel;
 import model.Connect;
+import model.NhanSuModel;
 import model.PhongBanModel;
 import model.PhongBanModel.TrangThaiPhongBan;
 
@@ -66,5 +67,48 @@ public class PhongBanController {
     }
 
     return displayList;
-}
+    }
+    public boolean updatePhongBan(PhongBanModel phongBan) {
+        try {
+            Connect mc = new Connect();
+            Connection conn = mc.getConnection();
+            Statement stmt = conn.createStatement();
+
+            String sql = "UPDATE phong_ban SET " +
+                        "ten_phong_ban = '" + phongBan.getTenPhongBan() + "', " +
+                        "mo_ta = '" + phongBan.getMoTa() + "', " +
+                        "so_nhan_vien = '" + phongBan.getSoNhanVien() + "', " +
+                        "ngay_thanh_lap = '" + phongBan.getNgayThanhLap() + "', "+
+                        "trang_thai = '" + phongBan.getTrangThai() + "', " +
+                        "ngay_tao = '" + phongBan.getNgayTao() + "' " +
+                        "WHERE ma_phong_ban = " + phongBan.getMaPhongBan();
+
+            int result = stmt.executeUpdate(sql);
+            conn.close();
+
+            return result > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+     
+    }
+    public void delete(int id) {
+        try {
+           Connect mc = new Connect();
+           Connection conn = mc.getConnection();
+           Statement stmt = conn.createStatement();
+             String sql = "DELETE FROM phong_ban WHERE ma_phong_ban = " + id;
+             int result = stmt.executeUpdate(sql);
+             if (result > 0) {
+                    System.out.println("Xóa thành công Phòng Ban có id = " + id);
+                } else {
+                    System.out.println("Không tìm thấy Phòng Ban để xóa.");
+                }
+             conn.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+    }
 }

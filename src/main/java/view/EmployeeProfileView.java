@@ -22,7 +22,7 @@ import model.NhanSuModel;
 /**
  * @author Windows
  */
-public class EmployeeProfile extends JPanel {
+public class EmployeeProfileView extends JPanel {
     private JTextField searchField;
     private JComboBox<String> departmentFilter;
     private JComboBox<String> positionFilter;
@@ -33,7 +33,7 @@ public class EmployeeProfile extends JPanel {
     private nhanSuController nhansu;
     private NhanSuModel selectedNhanSu;
 
-    public EmployeeProfile() {
+    public EmployeeProfileView() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
@@ -227,10 +227,10 @@ public class EmployeeProfile extends JPanel {
     }
     private void insertDetailDialog(){
             // Tạo dialog
-            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfile.this), "Chi tiết nhân sự", true);
+            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfileView.this), "Chi tiết nhân sự", true);
             dialog.setLayout(new GridLayout(13, 2, 15, 15)); // 13 hàng (12 trường + 1 nút Quay lại), 2 cột (label + textfield)
             dialog.setSize(600, 500);
-            dialog.setLocationRelativeTo(EmployeeProfile.this);
+            dialog.setLocationRelativeTo(EmployeeProfileView.this);
             
 
             // Font chữ lớn hơn
@@ -582,10 +582,10 @@ public class EmployeeProfile extends JPanel {
             }
 
             // Tạo dialog
-            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfile.this), "Chi tiết nhân sự", true);
+            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfileView.this), "Chi tiết nhân sự", true);
             dialog.setLayout(new GridLayout(13, 2, 15, 15)); // 13 hàng (12 trường + 1 nút Quay lại), 2 cột (label + textfield)
             dialog.setSize(600, 500);
-            dialog.setLocationRelativeTo(EmployeeProfile.this);
+            dialog.setLocationRelativeTo(EmployeeProfileView.this);
             
 
             // Font chữ lớn hơn
@@ -720,10 +720,10 @@ public class EmployeeProfile extends JPanel {
             }
 
             // Tạo dialog
-            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfile.this), "Chi tiết nhân sự", true);
+            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfileView.this), "Chi tiết nhân sự", true);
             dialog.setLayout(new GridLayout(13, 2, 15, 15)); // 13 hàng (12 trường + 1 nút Quay lại), 2 cột (label + textfield)
             dialog.setSize(600, 500);
-            dialog.setLocationRelativeTo(EmployeeProfile.this);
+            dialog.setLocationRelativeTo(EmployeeProfileView.this);
             
 
             // Font chữ lớn hơn

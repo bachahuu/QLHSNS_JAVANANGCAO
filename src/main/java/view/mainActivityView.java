@@ -27,7 +27,8 @@ public class mainActivityView extends JFrame {
         "💼 Chức Vụ",
         "💰 Lương & Phụ Cấp",
         "📝 Hợp Đồng",
-        "🕒 Nghỉ Phép & Nghỉ Việc"
+        "🕒 Nghỉ Phép & Nghỉ Việc",
+        "📊 Báo Cáo & Thống Kê" 
     };
 
     private final HashMap<String, JPanel> contentPanels = new HashMap<>();
@@ -142,6 +143,8 @@ public class mainActivityView extends JFrame {
             case "🕒 Nghỉ Phép & Nghỉ Việc":
                 handleLeaveTab();
                 break;
+            case "📊 Báo Cáo & Thống Kê":
+                handlereportTab();
             default:
                 System.out.println("Tab không xác định: " + selectedTab);
         }
@@ -158,7 +161,7 @@ public class mainActivityView extends JFrame {
     private void handleEmployeeProfileTab() {
         System.out.println("=== XỬ LÝ TAB HỒ SƠ NHÂN SỰ ===");
         String key = "👤 Hồ Sơ Nhân Sự".trim();
-        EmployeeProfile employeeProfilePanel = new EmployeeProfile();
+        EmployeeProfileView employeeProfilePanel = new EmployeeProfileView();
         contentPanels.put(key, employeeProfilePanel); // Cập nhật panel cho tab này
         mainContentPanel.removeAll(); // Xóa các panel cũ
         for (String item : menuItems) {
@@ -173,6 +176,17 @@ public class mainActivityView extends JFrame {
 
     private void handleDepartmentTab() {
         System.out.println("=== XỬ LÝ TAB PHÒNG BAN ===");
+        String key = "🏢 Phòng Ban".trim();
+        PhongBanView phongBanview = new PhongBanView();
+        contentPanels.put(key, phongBanview); // Cập nhật panel cho tab này
+        mainContentPanel.removeAll(); // Xóa các panel cũ
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
+        }
+        cardLayout.show(mainContentPanel, key); // Hiển thị panel mới
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
 
     }
 
@@ -194,6 +208,9 @@ public class mainActivityView extends JFrame {
     private void handleLeaveTab() {
         System.out.println("=== XỬ LÝ TAB NGHỈ PHÉP & NGHỈ VIỆC ===");
 
+    }
+    private void handlereportTab(){
+        System.out.println("=== XỬ LÝ TAB Báo Cáo & Thống Kê ===");
     }
 
     private JPanel createPanel(String labelText) {
