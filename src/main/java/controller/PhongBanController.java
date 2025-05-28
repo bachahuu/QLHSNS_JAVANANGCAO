@@ -6,6 +6,7 @@ package controller;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,44 @@ public class PhongBanController {
     }
 
     return displayList;
+    }
+    
+    public boolean insertPhongBan(PhongBanModel phongBan) {
+        Connection conn = null;
+        Statement stmt = null;
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+             // Chuẩn bị các giá trị, xử lý null
+            String tenPhongBan = phongBan.getTenPhongBan() != null ? "'" + phongBan.getTenPhongBan() + "'" : "''";
+            String moTa = phongBan.getMoTa() != null ? "'" + phongBan.getMoTa() + "'" : "''";
+            String soNhanVien = String.valueOf(phongBan.getSoNhanVien());
+            String ngayThanhLap = phongBan.getNgayThanhLap() != null ? "'" + phongBan.getNgayThanhLap().toString() + "'" : "NULL";
+            String trangThai = phongBan.getTrangThai() != null ? "'" + phongBan.getTrangThai().name() + "'" : "'Hoat_dong'";
+
+                // Câu lệnh SQL nối chuỗi
+            // Câu lệnh SQL nối chuỗi
+            String sql = "INSERT INTO phong_ban (ten_phong_ban, mo_ta, so_nhan_vien, ngay_thanh_lap, trang_thai) VALUES (" +
+                         tenPhongBan + ", " +
+                         moTa + ", " +
+                         soNhanVien + ", " +
+                         ngayThanhLap + ", " +
+                         trangThai + ")";
+
+                stmt = conn.createStatement();
+                int rows = stmt.executeUpdate(sql);
+                
+                // Đóng kết nối và statement
+                stmt.close();
+                conn.close();
+                
+                return rows > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
     public boolean updatePhongBan(PhongBanModel phongBan) {
         try {

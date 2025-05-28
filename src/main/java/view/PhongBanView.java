@@ -5,8 +5,9 @@
 package view;
 
 
+import controller.ChucVuController;
 import controller.PhongBanController;
-
+import org.jdatepicker.impl.*; 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -20,7 +21,9 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -39,6 +42,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import model.NhanSuModel;
 
 import model.PhongBanModel;
 
@@ -119,11 +123,17 @@ public class PhongBanView extends JPanel{
                 if (columnIndex == 7) return JPanel.class; // For action buttons
                 return String.class;
             }
+            @Override
+            public void setValueAt(Object aValue, int row, int column) {
+                if (column != 7 && row < getRowCount()) { // Bỏ qua cột "Thao tác" và kiểm tra hàng hợp lệ
+                    super.setValueAt(aValue, row, column);
+                }
+            }
         };
         //fill dữ liệu từ database
         loadDataFromDatabase();
         // Sample data (replace with actual data in a real application)
-//        setupAddButtonListener();
+        setupAddButtonListener();
 
         phongbanTable = new JTable(tableModel);
         phongbanTable.setRowHeight(50);
@@ -226,6 +236,135 @@ public class PhongBanView extends JPanel{
         panel.add(deleteButton);
         return panel;
     }
+    
+    private void insertDetailDialog(){
+            // Tạo dialog
+            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(PhongBanView.this), "Thêm Phòng Ban", true);
+            dialog.setLayout(new GridLayout(13, 2, 15, 15)); // 13 hàng (12 trường + 1 nút Quay lại), 2 cột (label + textfield)
+            dialog.setSize(600, 500);
+            dialog.setLocationRelativeTo(PhongBanView.this);
+            
+
+            // Font chữ lớn hơn
+            Font labelFont = new Font("Arial", Font.PLAIN, 16);
+            Font fieldFont = new Font("Arial", Font.PLAIN, 16);
+
+            JLabel PhongBanLabel = new JLabel("Tên Phòng Ban:");
+            PhongBanLabel.setFont(labelFont);
+            dialog.add(PhongBanLabel);
+            JTextField PhongBanField = new JTextField();
+            PhongBanField.setFont(fieldFont);
+            PhongBanField.setEditable(true);
+            dialog.add(PhongBanField);
+
+            JLabel moTaLabel = new JLabel("Mô tả:");
+            moTaLabel.setFont(labelFont);
+            dialog.add(moTaLabel);
+            JTextField moTaField = new JTextField();
+            moTaField.setFont(fieldFont);
+            moTaField.setEditable(true);
+            dialog.add(moTaField);
+            
+            JLabel soThanhVienLabel = new JLabel("Số Thành Viên:");
+            soThanhVienLabel.setFont(labelFont);
+            dialog.add(soThanhVienLabel);
+            JTextField soThanhVienField = new JTextField();
+            soThanhVienField.setFont(fieldFont);
+            soThanhVienField.setEditable(true);
+            dialog.add(soThanhVienField);
+
+            // Label: Ngày Thành Lập
+            JLabel ngayThanhLapLabel = new JLabel("Ngày Thành Lập:");
+            ngayThanhLapLabel.setFont(labelFont);
+            dialog.add(ngayThanhLapLabel);
+            // Tạo model cho JDatePicker (mặc định là ngày hôm nay)
+            UtilDateModel model = new UtilDateModel();
+            model.setSelected(true); // Chọn mặc định là ngày hiện tại
+            // Tùy chỉnh hiển thị
+            Properties p = new Properties();
+            p.put("text.today", "Hôm nay");
+            p.put("text.month", "Tháng");
+            p.put("text.year", "Năm");
+            // Tạo panel và date picker
+            JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+            JDatePickerImpl ngayThanhLapPicker = new JDatePickerImpl(datePanel, new DateComponentFormatter());
+            ngayThanhLapPicker.getJFormattedTextField().setFont(fieldFont);
+            dialog.add(ngayThanhLapPicker);
+
+            JLabel tinhTrangLabel = new JLabel("Tình trạng:");
+            tinhTrangLabel.setFont(labelFont);
+            dialog.add(tinhTrangLabel);
+            String[] tinhTrangOptions = {"Hoat_dong", "Ngung_hoat_dong"};
+            JComboBox<String> tinhTrangComboBox = new JComboBox<>(tinhTrangOptions);
+            tinhTrangComboBox.setFont(fieldFont);
+            tinhTrangComboBox.setSelectedItem(0);
+            dialog.add(tinhTrangComboBox);
+            
+
+            JButton saveButton = new JButton("Lưu thay đổi");
+            saveButton.setFont(new Font("Arial", Font.PLAIN, 16));
+            saveButton.addActionListener(e -> {
+              try {
+                     // Lấy dữ liệu từ các trường
+                    String tenPhongBan = PhongBanField.getText().trim();
+                    String moTa = moTaField.getText().trim();
+                    int soThanhVien = Integer.parseInt(soThanhVienField.getText().trim()); 
+                    String tinhTrang =(String)tinhTrangComboBox.getSelectedItem();
+                    PhongBanModel.TrangThaiPhongBan tinhTrangEnum;
+                    tinhTrangEnum = PhongBanModel.TrangThaiPhongBan.valueOf(tinhTrang);
+                   
+                    // Lấy ngày thành lập từ date picker
+                    Date selectedDate = (Date) ngayThanhLapPicker.getModel().getValue();
+                    if (selectedDate == null) {
+                        JOptionPane.showMessageDialog(dialog, "Vui lòng chọn ngày thành lập!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    java.sql.Date ngayThanhLap = new java.sql.Date(selectedDate.getTime());
+
+                    // Xác thực dữ liệu
+                    if (tenPhongBan.isEmpty()) {
+                        JOptionPane.showMessageDialog(dialog, "Tên phòng ban không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+
+                    // Tạo đối tượng PhongBanModel
+                    PhongBanModel newPhongBan = new PhongBanModel();
+                    newPhongBan.setTenPhongBan(tenPhongBan);
+                    newPhongBan.setMoTa(moTa);
+                    newPhongBan.setNgayThanhLap(ngayThanhLap);
+                    newPhongBan.setSoNhanVien(soThanhVien); 
+                    newPhongBan.setTrangThai(tinhTrangEnum);
+
+               
+
+                    // Gọi hàm insertNhanVien từ nhanSuController
+                    boolean success = phongban.insertPhongBan(newPhongBan);
+
+                    if (success) {
+                        JOptionPane.showMessageDialog(dialog, "Thêm Phòng Ban thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                        refreshTableData(); // Làm mới bảng
+                        dialog.dispose(); // Đóng dialog
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "Thêm Phòng Ban thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(dialog, "Có lỗi xảy ra: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }      
+            });
+            dialog.add(saveButton);
+
+            // Nút Quay trở lại
+            JButton backButton = new JButton("Quay trở lại");
+            backButton.setFont(new Font("Arial", Font.PLAIN, 16));
+            backButton.addActionListener(e -> dialog.dispose());
+            dialog.add(backButton);
+
+            // Hiển thị dialog
+            dialog.setVisible(true);
+        }
     // Phương thức để thay đổi kích thước icon
     private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
         if (icon != null) {
@@ -238,6 +377,12 @@ public class PhongBanView extends JPanel{
             return new ImageIcon(resizedImg);
         }
         return icon; // Trả về icon gốc nếu không thể resize
+    }
+
+    private void setupAddButtonListener() {
+       addButton.addActionListener(e -> {
+            insertDetailDialog();
+        }); 
     }
 
     class ButtonRenderer implements TableCellRenderer {
@@ -263,57 +408,72 @@ public class PhongBanView extends JPanel{
     class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
         private JPanel panel;
         private int row;
+        private JTable table;
 
         public ButtonEditor(JCheckBox checkBox) {
             panel = createButtonPanel(true,
-                e -> showDetailDialog(row),
-                e -> editDetailDialog(row),
                 e -> {
-                            // Lấy mã số từ cột 0
-                        int maPhongBan = (int) tableModel.getValueAt(row, 0);
+                if (table != null && row < table.getRowCount()) { // Kiểm tra hàng hợp lệ
+                    showDetailDialog(row);
+                }
+                fireEditingStopped();
+                },
+                e -> {
+                    if (table != null && row < table.getRowCount()) { // Kiểm tra hàng hợp lệ
+                        editDetailDialog(row);
+                    }
+                    fireEditingStopped();
+                },
+                e -> {
+                    if (table == null || row >= table.getRowCount()) { // Kiểm tra hàng hợp lệ
+                        fireEditingStopped();
+                        return;
+                    }
 
-                        // Tìm NhanSuModel tương ứng
-                        List<PhongBanModel> phongBanList = phongban.getAll();
-                        selectedPhongBan = null;
-                        for (PhongBanModel phongBan : phongBanList) {
-                            if (phongBan.getMaPhongBan() == maPhongBan) {
-                                selectedPhongBan = phongBan;
-                                break;
-                            }
+                    int maPhongBan = (int) tableModel.getValueAt(row, 0);
+                    List<PhongBanModel> phongBanList = phongban.getAll();
+                    selectedPhongBan = null;
+                    for (PhongBanModel phongBan : phongBanList) {
+                        if (phongBan.getMaPhongBan() == maPhongBan) {
+                            selectedPhongBan = phongBan;
+                            break;
                         }
+                    }
 
-                        if (selectedPhongBan == null) {
-                            JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin nhân viên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                            fireEditingStopped();
-                            return;
+                    if (selectedPhongBan == null) {
+                        JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin phòng ban!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        fireEditingStopped();
+                        return;
+                    }
+
+                    int confirm = JOptionPane.showConfirmDialog(
+                        null,
+                        "Bạn có chắc muốn xóa phòng ban: " + selectedPhongBan.getTenPhongBan() + " (Mã: " + maPhongBan + ")?",
+                        "Xác nhận xóa",
+                        JOptionPane.YES_NO_OPTION
+                    );
+
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        try {
+                            phongban.delete(selectedPhongBan.getMaPhongBan());
+                            JOptionPane.showMessageDialog(null, "Xóa phòng ban thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                            // Hoãn làm mới bảng để tránh xung đột
+                            SwingUtilities.invokeLater(() -> {
+                                refreshTableData();
+                            });
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(null, "Xóa phòng ban thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
                         }
+                    }
 
-                        // Xác nhận xóa
-                        int confirm = JOptionPane.showConfirmDialog(
-                            null,
-                            "Bạn có chắc muốn xóa nhân viên: " + selectedPhongBan.getTenPhongBan() + " (Mã: " + maPhongBan + ")?",
-                            "Xác nhận xóa",
-                            JOptionPane.YES_NO_OPTION
-                        );
-
-                        if (confirm == JOptionPane.YES_OPTION) {
-                            try {
-                                // Gọi hàm delete
-                                phongban.delete(selectedPhongBan.getMaPhongBan());
-                                JOptionPane.showMessageDialog(null, "Xóa nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                                refreshTableData(); // Làm mới bảng
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                    JOptionPane.showMessageDialog(null, "Xóa nhân viên thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                                }
-                        }
-
-                        fireEditingStopped();                   
+                    fireEditingStopped();
                 }
             );
         }
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            this.table = table; // Lưu tham chiếu đến bảng
             this.row = row;
             if (isSelected) {
                 panel.setBackground(table.getSelectionBackground());
@@ -325,9 +485,13 @@ public class PhongBanView extends JPanel{
 
         @Override
         public Object getCellEditorValue() {
-            return null;
+            return panel;
         }
         private void showDetailDialog(int row){
+            if (row >= phongbanTable.getRowCount()) {
+                JOptionPane.showMessageDialog(null, "Hàng không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
              // Lấy mã phong ban từ cột 0
             Object maPhongBanObj = tableModel.getValueAt(row, 0);
             int maPhongBan = (maPhongBanObj instanceof Integer) ? (int) maPhongBanObj : Integer.parseInt(maPhongBanObj.toString());
@@ -431,6 +595,10 @@ public class PhongBanView extends JPanel{
         
         //editdialog
         private void editDetailDialog(int row){
+            if (row >= phongbanTable.getRowCount()) {
+                JOptionPane.showMessageDialog(null, "Hàng không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
              // Lấy mã nhân viên từ cột 0
             Object maPhongBanObj = tableModel.getValueAt(row, 0);
             int maPhongBan = (maPhongBanObj instanceof Integer) ? (int) maPhongBanObj : Integer.parseInt(maPhongBanObj.toString());
@@ -575,9 +743,8 @@ public class PhongBanView extends JPanel{
                         boolean success = phongban.updatePhongBan(updatedPhongBan);
                         if (success) {
                             JOptionPane.showMessageDialog(dialog, "Cập nhật thông tin phòng ban thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                            refreshTableData();
+                            SwingUtilities.invokeLater(() -> refreshTableData()); // Hoãn làm mới bảng
                             dialog.dispose();
-                            fireEditingStopped();
                         } else {
                             JOptionPane.showMessageDialog(dialog, "Cập nhật thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
                         }

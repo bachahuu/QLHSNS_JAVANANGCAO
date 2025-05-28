@@ -101,6 +101,12 @@ public class EmployeeProfileView extends JPanel {
                 if (columnIndex == 7) return JPanel.class; // For action buttons
                 return String.class;
             }
+            @Override
+            public void setValueAt(Object aValue, int row, int column) {
+                if (column != 7 && row < getRowCount()) { // Bỏ qua cột "Thao tác" và kiểm tra hàng hợp lệ
+                    super.setValueAt(aValue, row, column);
+                }
+            }
         };
         //fill dữ liệu từ database
         loadDataFromDatabase();
@@ -500,13 +506,28 @@ public class EmployeeProfileView extends JPanel {
     class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
         private JPanel panel;
         private int row;
+        private JTable table;
 
         public ButtonEditor(JCheckBox checkBox) {
             panel = createButtonPanel(true,
-                e -> showDetailDialog(row),
-                e -> editDetailDialog(row),
                 e -> {
-                            // Lấy mã số từ cột 0
+                if (table != null && row < table.getRowCount()) { // Kiểm tra hàng hợp lệ
+                    showDetailDialog(row);
+                }
+                fireEditingStopped();
+                },
+                e -> {
+                    if (table != null && row < table.getRowCount()) { // Kiểm tra hàng hợp lệ
+                        editDetailDialog(row);
+                    }
+                    fireEditingStopped();
+                },
+                e -> {
+                        if (table == null || row >= table.getRowCount()) { // Kiểm tra hàng hợp lệ
+                            fireEditingStopped();
+                            return;
+                        }
+                        // Lấy mã số từ cột 0
                         String maSo = (String) tableModel.getValueAt(row, 0);
 
                         // Tìm NhanSuModel tương ứng
@@ -538,7 +559,10 @@ public class EmployeeProfileView extends JPanel {
                                 // Gọi hàm delete
                                 nhansu.delete(selectedNhanSu.getMaNhanVien());
                                 JOptionPane.showMessageDialog(null, "Xóa nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                                refreshTableData(); // Làm mới bảng
+                                // Hoãn làm mới bảng để tránh xung đột
+                                SwingUtilities.invokeLater(() -> {
+                                    refreshTableData();
+                                });
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
                                     JOptionPane.showMessageDialog(null, "Xóa nhân viên thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -551,6 +575,7 @@ public class EmployeeProfileView extends JPanel {
         }
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            this.table = table; // Lưu tham chiếu đến bảng
             this.row = row;
             if (isSelected) {
                 panel.setBackground(table.getSelectionBackground());
@@ -562,9 +587,10 @@ public class EmployeeProfileView extends JPanel {
 
         @Override
         public Object getCellEditorValue() {
-            return null;
+            return panel;
         }
         private void showDetailDialog(int row){
+            
              // Lấy mã nhân viên từ cột 0
             String maSo = (String) tableModel.getValueAt(row, 0);
             List<NhanSuModel> nhanSuList = nhansu.getAll();
@@ -939,14 +965,10 @@ public class EmployeeProfileView extends JPanel {
                     if (success) {
                         JOptionPane.showMessageDialog(dialog, "Cập nhật thông tin nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
 
-                        // Cập nhật lại dữ liệu trong bảng
-                        refreshTableData();
-
+                        SwingUtilities.invokeLater(() -> refreshTableData()); // Hoãn làm mới bảng
                         // Đóng dialog
                         dialog.dispose();
 
-                        // Dừng cell editing
-                        fireEditingStopped();
                     } else {
                         JOptionPane.showMessageDialog(dialog, "Cập nhật thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
