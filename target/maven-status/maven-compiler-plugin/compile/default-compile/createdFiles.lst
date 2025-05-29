@@ -1,11 +1,15 @@
+view\PhongBanView$4.class
 model\Connect.class
 view\EmployeeProfileView$ButtonRenderer.class
 view\PhongBanView$1.class
 view\mainActivityView$MenuRenderer.class
 controller\PhongBanController.class
+view\EmployeeProfileView$2.class
+view\PhongBanView$2.class
 controller\nhanSuController.class
 model\ChucVuModel.class
 model\PhongBanModel$TrangThaiPhongBan.class
+view\EmployeeProfileView$4.class
 view\PhongBanView$ButtonEditor.class
 model\ChucVuModel$TrangThaiChucVu.class
 view\EmployeeProfileView.class
@@ -14,7 +18,9 @@ view\EmployeeProfileView$1.class
 controller\ChucVuController.class
 model\PhongBanModel.class
 view\mainActivityView.class
+view\PhongBanView$3.class
 com\mycompany\quanlyhosonhansu\QuanLyHoSoNhanSu.class
+view\EmployeeProfileView$3.class
 view\EmployeeProfileView$ButtonEditor.class
 view\PhongBanView$ButtonRenderer.class
 view\PhongBanView.class

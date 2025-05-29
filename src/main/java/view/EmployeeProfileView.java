@@ -14,8 +14,15 @@ import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import model.NhanSuModel;
 
@@ -47,9 +54,29 @@ public class EmployeeProfileView extends JPanel {
         searchPanel.setBackground(new Color(240, 240, 240));
         searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        searchField = new JTextField("Tìm kiếm nhân sự...");
+        // Tạo JTextField với placeholder
+        searchField = new JTextField();
         searchField.setForeground(Color.GRAY);
+        searchField.setText("Tìm kiếm nhân sự..."); // Đặt placeholder làm giá trị mặc định
+        searchField.setPreferredSize(new Dimension(200, 30));
+        // Xử lý placeholder cho searchField
+        searchField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (searchField.getText().equals("Tìm kiếm nhân sự...")) {
+                    searchField.setText(""); // Xóa placeholder khi focus
+                    searchField.setForeground(Color.BLACK); // Đổi màu chữ thành đen khi nhập
+                }
+            }
 
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (searchField.getText().isEmpty()) {
+                    searchField.setForeground(Color.GRAY); // Đổi màu chữ thành xám khi rỗng
+                    searchField.setText("Tìm kiếm nhân sự..."); // Khôi phục placeholder
+                }
+            }
+        });
         // Load search icon
         URL searchUrl = getClass().getResource("/images/search.png");
         if (searchUrl == null) {
@@ -57,6 +84,17 @@ public class EmployeeProfileView extends JPanel {
         }
         ImageIcon searchIcon = (searchUrl != null) ? resizeIcon(new ImageIcon(searchUrl), 25, 25) : new ImageIcon();
         JLabel searchLabel = new JLabel(searchIcon);
+        
+        searchLabel.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                String searchText = searchField.getText().trim();
+                if (searchText.equals("Tìm kiếm nhân sự...")) {
+                    searchText = ""; // Xóa placeholder nếu người dùng nhấn tìm mà không nhập
+                }
+                searchNhanSu(searchText);
+            }
+        });
 
         // Thêm biểu tượng vào bên trái của JTextField
         searchField.setBorder(BorderFactory.createCompoundBorder(
@@ -72,12 +110,12 @@ public class EmployeeProfileView extends JPanel {
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         filterPanel.setBackground(Color.WHITE);
 
-        departmentFilter = new JComboBox<>(new String[]{"Tất cả phòng ban", "Ban Lãnh đạo", "Phòng Kinh doanh", "Phòng Nhân sự"});
-        positionFilter = new JComboBox<>(new String[]{"Tất cả chức vụ", "Giám đốc", "Nhân viên", "Trưởng phòng"});
+//        departmentFilter = new JComboBox<>(new String[]{"Tất cả phòng ban", "Ban Lãnh đạo", "Phòng Kinh doanh", "Phòng Nhân sự"});
+//        positionFilter = new JComboBox<>(new String[]{"Tất cả chức vụ", "Giám đốc", "Nhân viên", "Trưởng phòng"});
         statusFilter = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang làm việc", "Đã nghỉ việc"});
 
-        filterPanel.add(departmentFilter);
-        filterPanel.add(positionFilter);
+//        filterPanel.add(departmentFilter);
+//        filterPanel.add(positionFilter);
         filterPanel.add(statusFilter);
 
         addButton = new JButton("Thêm nhân sự");
@@ -108,8 +146,20 @@ public class EmployeeProfileView extends JPanel {
                 }
             }
         };
+        
+        //lọc dữ liệu theo trạng thái
+        statusFilter.addItemListener(new ItemListener(){
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    String selectedStatus = statusFilter.getSelectedItem().toString();
+                    filterNhanSuByStatus(selectedStatus);
+                }
+            }            
+        });
         //fill dữ liệu từ database
         loadDataFromDatabase();
+       
         // Sample data (replace with actual data in a real application)
         setupAddButtonListener();
 
@@ -161,6 +211,47 @@ public class EmployeeProfileView extends JPanel {
         
         // Load lại dữ liệu từ database
         loadDataFromDatabase();
+    }
+    
+    private void searchNhanSu(String searchText) {
+        nhansu = new nhanSuController();
+        List<NhanSuModel> filteredList = nhansu.searchByHoTen(searchText);
+
+        // Cập nhật bảng với danh sách đã lọc
+        tableModel.setRowCount(0);
+        for (NhanSuModel nhanSu : filteredList) {
+            Object[] row = {
+                nhanSu.getMaSo(),
+                nhanSu.getHoTen(),
+                nhanSu.getGioiTinh(),
+                nhanSu.getNgaySinh() != null ? nhanSu.getNgaySinh().toString() : "",
+                nhanSu.getDiaChi(),
+                "SDT: " + nhanSu.getSoDienThoai() + "\nEmail: " + nhanSu.getEmail(),
+                nhanSu.getTinhTrang(),
+                createButtonPanel(false, null, null, null)
+            };
+            tableModel.addRow(row);
+        }
+    }
+    
+    private void filterNhanSuByStatus(String selectedStatus){
+        nhansu = new nhanSuController();
+        List<NhanSuModel> filteredList = nhansu.getByTinhTrang(selectedStatus);
+        // Cập nhật bảng với danh sách đã lọc
+        tableModel.setRowCount(0);
+        for (NhanSuModel nhanSu : filteredList) {
+            Object[] row = {
+                nhanSu.getMaSo(),
+                nhanSu.getHoTen(),
+                nhanSu.getGioiTinh(),
+                nhanSu.getNgaySinh() != null ? nhanSu.getNgaySinh().toString() : "",
+                nhanSu.getDiaChi(),
+                "SDT: " + nhanSu.getSoDienThoai() + "\nEmail: " + nhanSu.getEmail(),
+                nhanSu.getTinhTrang(),
+                createButtonPanel(false, null, null, null) // Thêm panel nút cho cột "Thao tác"
+            };
+            tableModel.addRow(row);
+        }
     }
     private void setupAddButtonListener() {
         addButton.addActionListener(e -> {
@@ -936,7 +1027,7 @@ public class EmployeeProfileView extends JPanel {
                     updatedNhanSu.setMaPhongBan(maPhongBan);
                     updatedNhanSu.setMaChucVu(maChucVu);
                     updatedNhanSu.setTinhTrang(tinhTrang);
-
+                    
                     // Parse và set ngày sinh
                     if (!ngaySinh.isEmpty()) {
                         try {

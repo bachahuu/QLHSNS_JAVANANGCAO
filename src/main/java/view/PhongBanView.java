@@ -7,6 +7,7 @@ package view;
 
 import controller.ChucVuController;
 import controller.PhongBanController;
+import controller.nhanSuController;
 import org.jdatepicker.impl.*; 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,6 +20,12 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Date;
@@ -73,8 +80,29 @@ public class PhongBanView extends JPanel{
         searchPanel.setBackground(new Color(240, 240, 240));
         searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        searchField = new JTextField("Tìm kiếm Phòng ban...");
+        // Tạo JTextField với placeholder
+        searchField = new JTextField();
         searchField.setForeground(Color.GRAY);
+        searchField.setText("Tìm kiếm Phòng Ban..."); // Đặt placeholder làm giá trị mặc định
+        searchField.setPreferredSize(new Dimension(200, 30));
+        // Xử lý placeholder cho searchField
+        searchField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (searchField.getText().equals("Tìm kiếm Phòng Ban...")) {
+                    searchField.setText(""); // Xóa placeholder khi focus
+                    searchField.setForeground(Color.BLACK); // Đổi màu chữ thành đen khi nhập
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (searchField.getText().isEmpty()) {
+                    searchField.setForeground(Color.GRAY); // Đổi màu chữ thành xám khi rỗng
+                    searchField.setText("Tìm kiếm Phòng Ban..."); // Khôi phục placeholder
+                }
+            }
+        });
 
         // Load search icon
         URL searchUrl = getClass().getResource("/images/search.png");
@@ -83,6 +111,17 @@ public class PhongBanView extends JPanel{
         }
         ImageIcon searchIcon = (searchUrl != null) ? resizeIcon(new ImageIcon(searchUrl), 25, 25) : new ImageIcon();
         JLabel searchLabel = new JLabel(searchIcon);
+        
+        searchLabel.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                String searchText = searchField.getText().trim();
+                if (searchText.equals("Tìm kiếm Phòng Ban...")) {
+                    searchText = ""; // Xóa placeholder nếu người dùng nhấn tìm mà không nhập
+                }
+                searchPhongBan(searchText);
+            }
+        });
 
         // Thêm biểu tượng vào bên trái của JTextField
         searchField.setBorder(BorderFactory.createCompoundBorder(
@@ -97,7 +136,7 @@ public class PhongBanView extends JPanel{
         // Filter and add button panel
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         filterPanel.setBackground(Color.WHITE);
-        statusFilter = new JComboBox<>(new String[]{"Tất cả trạng thái", "Hoat_dong", "Ngung_hoat_dongc"});
+        statusFilter = new JComboBox<>(new String[]{"Tất cả trạng thái", "Hoat_dong", "Ngung_hoat_dong"});
 
         filterPanel.add(statusFilter);
 
@@ -130,6 +169,16 @@ public class PhongBanView extends JPanel{
                 }
             }
         };
+                //lọc dữ liệu theo trạng thái
+        statusFilter.addItemListener(new ItemListener(){
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    String selectedStatus = statusFilter.getSelectedItem().toString();
+                    filterPhongBanByStatus(selectedStatus);
+                }
+            }            
+        });
         //fill dữ liệu từ database
         loadDataFromDatabase();
         // Sample data (replace with actual data in a real application)
@@ -185,6 +234,45 @@ public class PhongBanView extends JPanel{
         
         // Load lại dữ liệu từ database
         loadDataFromDatabase();
+    }
+    private void searchPhongBan(String searchText) {
+        phongban = new PhongBanController();
+        List<PhongBanModel> filteredList = phongban.searchByTenPhongBan(searchText);
+
+        // Cập nhật bảng với danh sách đã lọc
+        tableModel.setRowCount(0);
+        for (PhongBanModel phongBan : filteredList) {
+            Object[] row = {
+                phongBan.getMaPhongBan(),
+                phongBan.getTenPhongBan(),
+                phongBan.getMoTa(),
+                phongBan.getSoNhanVien(),
+                phongBan.getNgayThanhLap() != null ? phongBan.getNgayThanhLap().toString() : "",
+                phongBan.getTrangThai(),
+                phongBan.getNgayTao() != null ? phongBan.getNgayTao().toString() : "",
+                createButtonPanel(false, null, null, null)
+            };
+            tableModel.addRow(row);
+        }
+    }
+    private void filterPhongBanByStatus(String selectedStatus){
+        phongban = new PhongBanController();
+        List<PhongBanModel> filteredList = phongban.getByTinhTrang(selectedStatus);
+        // Cập nhật bảng với danh sách đã lọc
+        tableModel.setRowCount(0);
+        for (PhongBanModel phongBan : filteredList) {
+            Object[] row = {
+                phongBan.getMaPhongBan(),
+                phongBan.getTenPhongBan(),
+                phongBan.getMoTa(),
+                phongBan.getSoNhanVien(),
+                phongBan.getNgayThanhLap() != null ? phongBan.getNgayThanhLap().toString() : "",
+                phongBan.getTrangThai(),
+                phongBan.getNgayTao() != null ? phongBan.getNgayTao().toString() : "",
+                createButtonPanel(false, null, null, null)
+            };
+            tableModel.addRow(row);
+        }
     }
     // Phương thức chung để tạo panel chứa các nút
     private JPanel createButtonPanel(boolean withListeners, ActionListener viewListener, ActionListener editListener, ActionListener deleteListener) {

@@ -5,6 +5,7 @@
 package controller;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -56,6 +57,109 @@ public class nhanSuController {
             e.printStackTrace();
         }
          return list;
+    }
+     // tìm theo họ và tên
+    public List<NhanSuModel> searchByHoTen(String hoTen) {
+        List<NhanSuModel> list = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+                String query = "SELECT * FROM nhan_vien WHERE ho_ten LIKE ?";
+                pstmt = conn.prepareStatement(query);
+                pstmt.setString(1, "%" + hoTen + "%");
+                rs = pstmt.executeQuery();
+
+                while (rs.next()) {
+                    NhanSuModel nhanSu = new NhanSuModel();
+                    nhanSu.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+                    nhanSu.setMaSo(rs.getString("ma_so"));
+                    nhanSu.setHoTen(rs.getString("ho_ten"));
+                    nhanSu.setNgaySinh(rs.getDate("ngay_sinh"));
+                    nhanSu.setGioiTinh(rs.getString("gioi_tinh"));
+                    nhanSu.setDiaChi(rs.getString("dia_chi"));
+                    nhanSu.setSoDienThoai(rs.getString("so_dien_thoai"));
+                    nhanSu.setEmail(rs.getString("email"));
+                    nhanSu.setTrinhDoHocVan(rs.getString("trinh_do_hoc_van"));
+                    nhanSu.setMaPhongBan(rs.getInt("ma_phong_ban"));
+                    nhanSu.setMaChucVu(rs.getInt("ma_chuc_vu"));
+                    nhanSu.setNgayVaoLam(rs.getDate("ngay_vao_lam"));
+                    nhanSu.setTinhTrang(rs.getString("tinh_trang"));
+                    list.add(nhanSu);
+                }
+            } else {
+                System.out.println("Kết nối cơ sở dữ liệu thất bại");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+    // Phương thức mới để lấy danh sách nhân sự theo trạng thái
+    public List<NhanSuModel> getByTinhTrang(String selectedStatus) {
+        List<NhanSuModel> list = new ArrayList<>();
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+                stmt = conn.createStatement();
+                String query;
+                if (selectedStatus.equals("Tất cả trạng thái")) {
+                    query = "SELECT * FROM nhan_vien";
+                } else {
+                    String tinhTrang = selectedStatus.equals("Đang làm việc") ? "Dang_lam" : "Da_nghi";
+                    query = "SELECT * FROM nhan_vien WHERE tinh_trang = '" + tinhTrang + "'";
+                }
+                rs = stmt.executeQuery(query);
+
+                while (rs.next()) {
+                    NhanSuModel nhanSu = new NhanSuModel();
+                    nhanSu.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+                    nhanSu.setMaSo(rs.getString("ma_so"));
+                    nhanSu.setHoTen(rs.getString("ho_ten"));
+                    nhanSu.setNgaySinh(rs.getDate("ngay_sinh"));
+                    nhanSu.setGioiTinh(rs.getString("gioi_tinh"));
+                    nhanSu.setDiaChi(rs.getString("dia_chi"));
+                    nhanSu.setSoDienThoai(rs.getString("so_dien_thoai"));
+                    nhanSu.setEmail(rs.getString("email"));
+                    nhanSu.setTrinhDoHocVan(rs.getString("trinh_do_hoc_van"));
+                    nhanSu.setMaPhongBan(rs.getInt("ma_phong_ban"));
+                    nhanSu.setMaChucVu(rs.getInt("ma_chuc_vu"));
+                    nhanSu.setNgayVaoLam(rs.getDate("ngay_vao_lam"));
+                    nhanSu.setTinhTrang(rs.getString("tinh_trang"));
+                    list.add(nhanSu);
+                }
+            } else {
+                System.out.println("Kết nối cơ sở dữ liệu thất bại");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
     }
      public boolean insertNhanVien(NhanSuModel nhanSu) {
          Connection conn = null;

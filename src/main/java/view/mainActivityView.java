@@ -154,7 +154,7 @@ public class mainActivityView extends JFrame {
     private void handleHomeTab() {
         System.out.println("=== XỬ LÝ TAB TRANG CHỦ ===");
     }
-        private void handleAccountTab() {
+    private void handleAccountTab() {
         System.out.println("=== XỬ LÝ TAB QUẢN LÝ TÀI KHOẢN ===");
     }
 
