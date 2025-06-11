@@ -1,7 +1,9 @@
 view\EmployeeProfileView$5.class
+model\ContractModel$LoaiHopDong.class
 view\PhongBanView$4.class
 model\Connect.class
 view\EmployeeProfileView$ButtonRenderer.class
+model\ContractModel.class
 view\PhongBanView$1.class
 view\mainActivityView$MenuRenderer.class
 controller\PhongBanController.class
@@ -14,6 +16,7 @@ view\EmployeeProfileView$4.class
 view\PhongBanView$ButtonEditor.class
 model\ChucVuModel$TrangThaiChucVu.class
 view\EmployeeProfileView.class
+model\ContractModel$TrangThaiHopDong.class
 model\NhanSuModel.class
 view\EmployeeProfileView$1.class
 view\PhongBanView$5.class

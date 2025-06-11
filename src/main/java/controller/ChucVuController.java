@@ -38,7 +38,6 @@ public class ChucVuController {
                     chucvu.setTenChucVu(rs.getString("ten_chuc_vu"));
                     chucvu.setMoTa(rs.getString("mo_ta"));
                     chucvu.setCapBac(rs.getObject("cap_bac") != null ? rs.getInt("cap_bac") : null);
-                    chucvu.setLuongCoBan(rs.getBigDecimal("luong_co_ban"));
                     chucvu.setPhuCapMacDinh(rs.getBigDecimal("phu_cap_mac_dinh"));
                     chucvu.setQuyenHan(rs.getString("quyen_han"));
                     

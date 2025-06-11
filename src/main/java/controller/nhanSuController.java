@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import model.Connect;
+import model.ContractModel;
 import model.NhanSuModel;
 
 /**
@@ -161,14 +162,18 @@ public class nhanSuController {
         }
         return list;
     }
-     public boolean insertNhanVien(NhanSuModel nhanSu) {
-         Connection conn = null;
+     public boolean insertNhanVienAndContract(NhanSuModel nhanSu, ContractModel contract) {
+        Connection conn = null;
         Statement stmt = null;
+        ResultSet generatedKeys = null;
+
         try {
             Connect mc = new Connect();
             conn = mc.getConnection();
             if (conn != null) {
-                // Chuẩn bị các giá trị, xử lý null
+                conn.setAutoCommit(false); // Bắt đầu giao dịch
+
+                // Chuẩn bị các giá trị cho nhan_vien
                 String maSo = nhanSu.getMaSo() != null ? "'" + nhanSu.getMaSo() + "'" : "''";
                 String hoTen = nhanSu.getHoTen() != null ? "'" + nhanSu.getHoTen() + "'" : "''";
                 String gioiTinh = nhanSu.getGioiTinh() != null ? "'" + nhanSu.getGioiTinh() + "'" : "''";
@@ -182,32 +187,74 @@ public class nhanSuController {
                 String ngayVaoLam = nhanSu.getNgayVaoLam() != null ? "'" + nhanSu.getNgayVaoLam().toString() + "'" : "NULL";
                 String tinhTrang = nhanSu.getTinhTrang() != null ? "'" + nhanSu.getTinhTrang() + "'" : "'Dang_lam'";
 
-                // Câu lệnh SQL nối chuỗi
-                String sql = "INSERT INTO nhan_vien (ma_so, ho_ten, ngay_sinh, gioi_tinh, dia_chi, so_dien_thoai, email, trinh_do_hoc_van, ma_phong_ban, ma_chuc_vu, ngay_vao_lam, tinh_trang) VALUES (" +
-                             maSo + ", " +
-                             hoTen + ", " +
-                             ngaySinh + ", " +
-                             gioiTinh + ", " +
-                             diaChi + ", " +
-                             soDienThoai + ", " +
-                             email + ", " +
-                             trinhDoHocVan + ", " +
-                             maPhongBan + ", " +
-                             maChucVu + ", " +
-                             ngayVaoLam + ", " +
-                             tinhTrang + ")";
+                // Câu lệnh SQL cho nhan_vien
+                String sqlNhanVien = "INSERT INTO nhan_vien (ma_so, ho_ten, ngay_sinh, gioi_tinh, dia_chi, so_dien_thoai, email, trinh_do_hoc_van, ma_phong_ban, ma_chuc_vu, ngay_vao_lam, tinh_trang) VALUES (" +
+                                    maSo + ", " +
+                                    hoTen + ", " +
+                                    ngaySinh + ", " +
+                                    gioiTinh + ", " +
+                                    diaChi + ", " +
+                                    soDienThoai + ", " +
+                                    email + ", " +
+                                    trinhDoHocVan + ", " +
+                                    maPhongBan + ", " +
+                                    maChucVu + ", " +
+                                    ngayVaoLam + ", " +
+                                    tinhTrang + ")";
 
                 stmt = conn.createStatement();
-                int rows = stmt.executeUpdate(sql);
-                
-                // Đóng kết nối và statement
-                stmt.close();
-                conn.close();
-                
-                return rows > 0;
+                stmt.executeUpdate(sqlNhanVien, Statement.RETURN_GENERATED_KEYS);
+
+                // Lấy ma_nhan_vien vừa tạo
+                generatedKeys = stmt.getGeneratedKeys();
+                int maNhanVien = 0;
+                if (generatedKeys.next()) {
+                    maNhanVien = generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Không thể lấy ma_nhan_vien!");
+                }
+
+                // Chuẩn bị các giá trị cho hop_dong
+                String loaiHopDong = contract.getLoaiHopDong() != null ? "'" + contract.getLoaiHopDong().name() + "'" : "NULL";
+                String ngayBatDau = contract.getNgayBatDau() != null ? "'" + contract.getNgayBatDau().toString() + "'" : "NULL";
+                String ngayKetThuc = contract.getNgayKetThuc() != null ? "'" + contract.getNgayKetThuc().toString() + "'" : "NULL";
+                String ngayKy = contract.getNgayKy() != null ? "'" + contract.getNgayKy().toString() + "'" : "NULL";
+                String trangThai = contract.getTrangThai() != null ? "'" + contract.getTrangThai().name() + "'" : "'Con_hieu_luc'";
+                String luongCoBan = contract.getLuongCoBan() != null ? "'" + contract.getLuongCoBan().toString() + "'" : "NULL";
+
+                // Câu lệnh SQL cho hop_dong
+                String sqlHopDong = "INSERT INTO hop_dong (ma_nhan_vien, loai_hop_dong, ngay_bat_dau, ngay_ket_thuc, ngay_ky, trang_thai, luong_co_ban) VALUES (" +
+                                  maNhanVien + ", " +
+                                  loaiHopDong + ", " +
+                                  ngayBatDau + ", " +
+                                  ngayKetThuc + ", " +
+                                  ngayKy + ", " +
+                                  trangThai + ", " +
+                                  luongCoBan + ")";
+
+                stmt.executeUpdate(sqlHopDong);
+
+                conn.commit(); // Hoàn tất giao dịch
+                return true;
             }
         } catch (SQLException e) {
+            try {
+                if (conn != null) {
+                    conn.rollback(); // Hủy giao dịch nếu có lỗi
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
