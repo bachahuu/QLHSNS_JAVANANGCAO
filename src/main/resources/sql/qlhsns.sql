@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 01, 2025 at 07:21 PM
+-- Generation Time: Jun 11, 2025 at 07:41 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -61,7 +61,6 @@ CREATE TABLE `chuc_vu` (
   `ten_chuc_vu` varchar(100) NOT NULL,
   `mo_ta` varchar(255) DEFAULT NULL,
   `cap_bac` int(11) DEFAULT NULL,
-  `luong_co_ban` decimal(15,2) DEFAULT NULL,
   `phu_cap_mac_dinh` decimal(15,2) DEFAULT NULL,
   `quyen_han` varchar(255) DEFAULT NULL,
   `trang_thai` enum('Hoat_dong','Ngung_hoat_dong') DEFAULT 'Hoat_dong',
@@ -72,14 +71,14 @@ CREATE TABLE `chuc_vu` (
 -- Dumping data for table `chuc_vu`
 --
 
-INSERT INTO `chuc_vu` (`ma_chuc_vu`, `ten_chuc_vu`, `mo_ta`, `cap_bac`, `luong_co_ban`, `phu_cap_mac_dinh`, `quyen_han`, `trang_thai`, `ngay_tao`) VALUES
-(1, 'Chủ Tịch hội đồng quản trị', 'chỉ việc ký hợp đồng', 0, 500000000.00, 100000000.00, 'nắm trong tay mọi quyền', 'Hoat_dong', '2025-05-26 14:56:58'),
-(2, 'giám đốc marketing', NULL, 1, 1000000.00, 500000.00, 'dưới chủ tịch hội đồng quản trị', 'Hoat_dong', '2025-05-27 08:13:33'),
-(3, 'Giám đốc', 'Giám đốc công ty', 1, 50000000.00, 10000000.00, 'Toàn quyền', 'Hoat_dong', '2025-05-29 07:18:04'),
-(4, 'Phó giám đốc', 'Phó giám đốc', 2, 35000000.00, 7000000.00, 'Quản lý cấp cao', 'Hoat_dong', '2025-05-29 07:18:04'),
-(5, 'Trưởng phòng', 'Trưởng phòng ban', 3, 25000000.00, 5000000.00, 'Quản lý phòng ban', 'Hoat_dong', '2025-05-29 07:18:04'),
-(6, 'Phó phòng', 'Phó phòng ban', 4, 20000000.00, 3000000.00, 'Hỗ trợ quản lý', 'Hoat_dong', '2025-05-29 07:18:04'),
-(7, 'Nhân viên chính', 'Nhân viên chính thức', 5, 15000000.00, 2000000.00, 'Thực hiện công việc', 'Hoat_dong', '2025-05-29 07:18:04');
+INSERT INTO `chuc_vu` (`ma_chuc_vu`, `ten_chuc_vu`, `mo_ta`, `cap_bac`, `phu_cap_mac_dinh`, `quyen_han`, `trang_thai`, `ngay_tao`) VALUES
+(1, 'Chủ Tịch hội đồng quản trị', 'chỉ việc ký hợp đồng', 0, 100000000.00, 'nắm trong tay mọi quyền', 'Hoat_dong', '2025-05-26 14:56:58'),
+(2, 'giám đốc marketing', NULL, 1, 500000.00, 'dưới chủ tịch hội đồng quản trị', 'Hoat_dong', '2025-05-27 08:13:33'),
+(3, 'Giám đốc', 'Giám đốc công ty', 1, 10000000.00, 'Toàn quyền', 'Hoat_dong', '2025-05-29 07:18:04'),
+(4, 'Phó giám đốc', 'Phó giám đốc', 2, 7000000.00, 'Quản lý cấp cao', 'Hoat_dong', '2025-05-29 07:18:04'),
+(5, 'Trưởng phòng', 'Trưởng phòng ban', 3, 5000000.00, 'Quản lý phòng ban', 'Hoat_dong', '2025-05-29 07:18:04'),
+(6, 'Phó phòng', 'Phó phòng ban', 4, 3000000.00, 'Hỗ trợ quản lý', 'Hoat_dong', '2025-05-29 07:18:04'),
+(7, 'Nhân viên chính', 'Nhân viên chính thức', 5, 2000000.00, 'Thực hiện công việc', 'Hoat_dong', '2025-05-29 07:18:04');
 
 -- --------------------------------------------------------
 
@@ -94,23 +93,24 @@ CREATE TABLE `hop_dong` (
   `ngay_bat_dau` date DEFAULT NULL,
   `ngay_ket_thuc` date DEFAULT NULL,
   `ngay_ky` date DEFAULT NULL,
-  `trang_thai` enum('Con_hieu_luc','Het_hieu_luc') DEFAULT NULL
+  `trang_thai` enum('Con_hieu_luc','Het_hieu_luc') DEFAULT NULL,
+  `luong_co_ban` decimal(15,2) DEFAULT NULL COMMENT 'Lương cơ bản thỏa thuận trong hợp đồng'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `hop_dong`
 --
 
-INSERT INTO `hop_dong` (`ma_hop_dong`, `ma_nhan_vien`, `loai_hop_dong`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_ky`, `trang_thai`) VALUES
-(16, 2, 'Chinh_thuc', '2020-01-15', NULL, '2020-01-10', 'Con_hieu_luc'),
-(17, 97, 'Chinh_thuc', '2020-02-01', NULL, '2020-01-25', 'Con_hieu_luc'),
-(18, 98, 'Chinh_thuc', '2020-02-15', NULL, '2020-02-10', 'Con_hieu_luc'),
-(19, 99, 'Chinh_thuc', '2020-03-01', NULL, '2020-02-25', 'Con_hieu_luc'),
-(20, 100, 'Chinh_thuc', '2020-04-15', NULL, '2020-04-10', 'Con_hieu_luc'),
-(23, 103, 'Chinh_thuc', '2020-07-01', NULL, '2020-06-25', 'Con_hieu_luc'),
-(24, 104, 'Thoi_vu', '2021-01-15', '2024-01-15', '2021-01-10', 'Con_hieu_luc'),
-(26, 106, 'Chinh_thuc', '2021-03-15', NULL, '2021-03-10', 'Con_hieu_luc'),
-(27, 107, 'Thoi_vu', '2021-04-01', '2024-04-01', '2021-03-25', 'Con_hieu_luc');
+INSERT INTO `hop_dong` (`ma_hop_dong`, `ma_nhan_vien`, `loai_hop_dong`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_ky`, `trang_thai`, `luong_co_ban`) VALUES
+(16, 2, 'Chinh_thuc', '2020-01-15', NULL, '2020-01-10', 'Con_hieu_luc', NULL),
+(17, 97, 'Chinh_thuc', '2020-02-01', NULL, '2020-01-25', 'Con_hieu_luc', NULL),
+(18, 98, 'Chinh_thuc', '2020-02-15', NULL, '2020-02-10', 'Con_hieu_luc', NULL),
+(19, 99, 'Chinh_thuc', '2020-03-01', NULL, '2020-02-25', 'Con_hieu_luc', NULL),
+(20, 100, 'Chinh_thuc', '2020-04-15', NULL, '2020-04-10', 'Con_hieu_luc', NULL),
+(23, 103, 'Chinh_thuc', '2020-07-01', NULL, '2020-06-25', 'Con_hieu_luc', NULL),
+(24, 104, 'Thoi_vu', '2021-01-15', '2024-01-15', '2021-01-10', 'Con_hieu_luc', NULL),
+(26, 106, 'Chinh_thuc', '2021-03-15', NULL, '2021-03-10', 'Con_hieu_luc', NULL),
+(27, 107, 'Thoi_vu', '2021-04-01', '2024-04-01', '2021-03-25', 'Con_hieu_luc', NULL);
 
 -- --------------------------------------------------------
 
@@ -122,7 +122,6 @@ CREATE TABLE `luong` (
   `ma_luong` int(11) NOT NULL,
   `ma_nhan_vien` int(11) DEFAULT NULL,
   `ngay_tinh_luong` date DEFAULT NULL,
-  `luong_co_ban` decimal(15,2) DEFAULT NULL,
   `so_ngay_cong` int(11) DEFAULT NULL,
   `so_gio_tang_ca` int(11) DEFAULT NULL,
   `tien_thuong` decimal(15,2) DEFAULT NULL,
@@ -136,16 +135,16 @@ CREATE TABLE `luong` (
 -- Dumping data for table `luong`
 --
 
-INSERT INTO `luong` (`ma_luong`, `ma_nhan_vien`, `ngay_tinh_luong`, `luong_co_ban`, `so_ngay_cong`, `so_gio_tang_ca`, `tien_thuong`, `tong_phu_cap`, `tong_khau_tru`, `luong_thuc_nhan`, `ngay_tao`) VALUES
-(1, 2, '2024-12-31', 50000000.00, 22, 20, 5000000.00, 10000000.00, 8000000.00, 57000000.00, '2025-05-29 07:38:25'),
-(2, 97, '2024-12-31', 25000000.00, 22, 15, 2000000.00, 5000000.00, 4000000.00, 28000000.00, '2025-05-29 07:38:25'),
-(3, 98, '2024-12-31', 25000000.00, 22, 10, 1500000.00, 5000000.00, 3800000.00, 27700000.00, '2025-05-29 07:38:25'),
-(4, 99, '2024-12-31', 25000000.00, 22, 8, 1000000.00, 5000000.00, 3700000.00, 27300000.00, '2025-05-29 07:38:25'),
-(5, 100, '2024-12-31', 15000000.00, 22, 12, 800000.00, 2000000.00, 2200000.00, 15600000.00, '2025-05-29 07:38:25'),
-(8, 103, '2024-12-31', 12000000.00, 22, 5, 500000.00, 1000000.00, 1800000.00, 11700000.00, '2025-05-29 07:38:25'),
-(9, 104, '2024-12-31', 12000000.00, 20, 0, 0.00, 1000000.00, 1700000.00, 11300000.00, '2025-05-29 07:38:25'),
-(11, 106, '2024-12-31', 20000000.00, 22, 12, 1200000.00, 3000000.00, 2800000.00, 21400000.00, '2025-05-29 07:38:25'),
-(12, 107, '2024-12-31', 12000000.00, 22, 3, 300000.00, 1000000.00, 1700000.00, 11600000.00, '2025-05-29 07:38:25');
+INSERT INTO `luong` (`ma_luong`, `ma_nhan_vien`, `ngay_tinh_luong`, `so_ngay_cong`, `so_gio_tang_ca`, `tien_thuong`, `tong_phu_cap`, `tong_khau_tru`, `luong_thuc_nhan`, `ngay_tao`) VALUES
+(1, 2, '2024-12-31', 22, 20, 5000000.00, 10000000.00, 8000000.00, 57000000.00, '2025-05-29 07:38:25'),
+(2, 97, '2024-12-31', 22, 15, 2000000.00, 5000000.00, 4000000.00, 28000000.00, '2025-05-29 07:38:25'),
+(3, 98, '2024-12-31', 22, 10, 1500000.00, 5000000.00, 3800000.00, 27700000.00, '2025-05-29 07:38:25'),
+(4, 99, '2024-12-31', 22, 8, 1000000.00, 5000000.00, 3700000.00, 27300000.00, '2025-05-29 07:38:25'),
+(5, 100, '2024-12-31', 22, 12, 800000.00, 2000000.00, 2200000.00, 15600000.00, '2025-05-29 07:38:25'),
+(8, 103, '2024-12-31', 22, 5, 500000.00, 1000000.00, 1800000.00, 11700000.00, '2025-05-29 07:38:25'),
+(9, 104, '2024-12-31', 20, 0, 0.00, 1000000.00, 1700000.00, 11300000.00, '2025-05-29 07:38:25'),
+(11, 106, '2024-12-31', 22, 12, 1200000.00, 3000000.00, 2800000.00, 21400000.00, '2025-05-29 07:38:25'),
+(12, 107, '2024-12-31', 22, 3, 300000.00, 1000000.00, 1700000.00, 11600000.00, '2025-05-29 07:38:25');
 
 -- --------------------------------------------------------
 
@@ -205,16 +204,17 @@ CREATE TABLE `nhan_vien` (
 --
 
 INSERT INTO `nhan_vien` (`ma_nhan_vien`, `ma_so`, `ho_ten`, `ngay_sinh`, `gioi_tinh`, `dia_chi`, `so_dien_thoai`, `email`, `trinh_do_hoc_van`, `ma_phong_ban`, `ma_chuc_vu`, `ngay_vao_lam`, `tinh_trang`) VALUES
-(2, 'NV002', 'Hà Hữu Nam', '1996-01-01', 'Nam', 'Thái Bình', '0964092903', 'Nam@gmail.com', 'Dai_hoc', 9, 4, '2024-01-05', 'Da_nghi'),
-(97, 'NV003', 'Nguyễn Văn An', '1985-03-15', 'Nam', '123 Đường ABC, Hà Nội', '0912345678', 'an.nguyen@company.com', 'Dai_hoc', 1, 1, '2020-01-15', 'Dang_lam'),
+(2, 'NV002', 'Hà Hữu Nam', '1996-01-01', 'Nu', 'Thái Bình', '0964092903', 'Nam@gmail.com', 'Dai_hoc', 9, 4, '2024-01-05', 'Da_nghi'),
+(97, 'NV003', 'Nguyễn Văn An', '1985-03-15', 'Nu', '123 Đường ABC, Hà Nội', '0912345678', 'an.nguyen@company.com', 'Dai_hoc', 1, 1, '2020-01-15', 'Dang_lam'),
 (98, 'NV004', 'Trần Thị Bình', '1990-07-20', 'Nu', '456 Đường XYZ, Hà Nội', '0923456789', 'binh.tran@company.com', 'Dai_hoc', 6, 3, '2020-02-01', 'Dang_lam'),
 (99, 'NV005', 'Lê Văn Cường', '1988-12-10', 'Nam', '789 Đường DEF, Hà Nội', '0934567890', 'cuong.le@company.com', 'Dai_hoc', 7, 3, '2020-02-15', 'Dang_lam'),
 (100, 'NV006', 'Phạm Thị Dung', '1992-05-25', 'Nu', '321 Đường GHI, Hà Nội', '0945678901', 'dung.pham@company.com', 'Dai_hoc', 8, 3, '2020-03-01', 'Dang_lam'),
-(103, 'NV009', 'Đỗ Văn Giang', '1991-02-14', 'Nam', '147 Đường PQR, Hà Nội', '0978901234', 'giang.do@company.com', 'Dai_hoc', 7, 5, '2020-06-15', 'Dang_lam'),
+(103, 'NV009', 'Đỗ Văn Giang', '1991-02-14', 'Nu', '147 Đường PQR, Hà Nội', '0978901234', 'giang.do@company.com', 'Dai_hoc', 7, 5, '2020-06-15', 'Dang_lam'),
 (104, 'NV010', 'Ngô Thị Hạnh', '1994-08-22', 'Nu', '258 Đường STU, Hà Nội', '0989012345', 'hanh.ngo@company.com', 'Cao_dang', 1, 6, '2020-07-01', 'Dang_lam'),
 (106, 'NV012', 'Đinh Thị Mai', '1992-04-28', 'Nu', '963 Đường DEF, Hà Nội', '0923456780', 'mai.dinh@company.com', 'Cao_dang', 6, 6, '2021-04-01', 'Dang_lam'),
 (107, 'NV015', 'Võ Văn Phúc', '1987-01-09', 'Nam', '468 Đường MNO, Hà Nội', '0956789013', 'phuc.vo@company.com', 'Dai_hoc', 10, 4, '2020-08-16', 'Da_nghi'),
-(109, 'NV020', 'Hồ Xuân Hương', '1993-01-01', 'Nu', 'Bồng Lai', '01082356487', 'huong@gmail.com', 'Dai_hoc', 1, 1, '2004-10-01', 'Da_nghi');
+(109, 'NV020', 'Hồ Xuân Hương', '1993-01-01', 'Nu', 'Bồng Lai', '01082356487', 'huong@gmail.com', 'Dai_hoc', 1, 1, '2004-10-01', 'Da_nghi'),
+(110, 'NV021', 'trịnh hoàng tùng', '2007-05-01', NULL, 'hà nội', '0348830862', 'tung@gmail.com', 'Dai_hoc', 7, 5, '2015-06-02', 'Dang_lam');
 
 -- --------------------------------------------------------
 
@@ -237,13 +237,12 @@ CREATE TABLE `phong_ban` (
 --
 
 INSERT INTO `phong_ban` (`ma_phong_ban`, `ten_phong_ban`, `mo_ta`, `so_nhan_vien`, `ngay_thanh_lap`, `trang_thai`, `ngay_tao`) VALUES
-(1, 'Chỉ Tịch', 'Điều hành công ty nghìn tỷ', 10, '2015-04-02', 'Hoat_dong', '2025-05-26 14:55:00'),
+(1, 'Chủ Tịch', 'Điều hành công ty nghìn tỷ', 10, '2016-08-02', 'Hoat_dong', '2025-05-25 17:00:00'),
 (6, 'Phòng Nhân sự', 'Quản lý nhân sự và tuyển dụng', 8, '2020-01-15', 'Hoat_dong', '2025-05-29 07:18:04'),
-(7, 'Phòng Kỹ thuật', 'Phát triển và bảo trì hệ thống', 15, '2020-02-01', 'Ngung_hoat_dong', '2025-05-29 07:18:04'),
+(7, 'Phòng Kỹ thuật', 'Phát triển và bảo trì hệ thống', 15, '2018-08-01', 'Ngung_hoat_dong', '2025-05-28 17:00:00'),
 (8, 'Phòng Kinh doanh', 'Bán hàng và chăm sóc khách hàng', 12, '2020-01-20', 'Hoat_dong', '2025-05-29 07:18:04'),
-(9, 'Phòng Kế toán', 'Quản lý tài chính và kế toán', 6, '2020-01-10', 'Hoat_dong', '2025-05-29 07:18:04'),
-(10, 'Phòng Marketing', 'Tiếp thị và quảng cáo', 10, '2020-03-01', 'Ngung_hoat_dong', '2025-05-29 07:18:04'),
-(11, 'Phòng Hành chính', 'Quản lý hành chính tổng hợp', 5, '2020-01-05', 'Hoat_dong', '2025-05-29 07:18:04');
+(9, 'Phòng Kế toán', 'Quản lý tài chính và kế toán', 6, '2020-01-10', 'Ngung_hoat_dong', '2025-05-28 17:00:00'),
+(10, 'Phòng Marketing', 'Tiếp thị và quảng cáo', 10, '2020-03-01', 'Ngung_hoat_dong', '2025-05-29 07:18:04');
 
 -- --------------------------------------------------------
 
@@ -374,13 +373,13 @@ ALTER TABLE `nghi_phep`
 -- AUTO_INCREMENT for table `nhan_vien`
 --
 ALTER TABLE `nhan_vien`
-  MODIFY `ma_nhan_vien` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
+  MODIFY `ma_nhan_vien` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
 
 --
 -- AUTO_INCREMENT for table `phong_ban`
 --
 ALTER TABLE `phong_ban`
-  MODIFY `ma_phong_ban` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `ma_phong_ban` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `tai_khoan`
