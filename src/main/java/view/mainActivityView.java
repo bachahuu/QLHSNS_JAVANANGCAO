@@ -21,7 +21,7 @@ public class mainActivityView extends JFrame {
 
     private final String[] menuItems = {
         "🏠 Trang Chủ",
-        "👤 Quản Lý Tài Khoản", // Di chuyển xuống ngay dưới Trang Chủ
+        "👤 Quản Lý Tài Khoản", 
         "👤 Hồ Sơ Nhân Sự",
         "🏢 Phòng Ban",
         "💼 Chức Vụ",

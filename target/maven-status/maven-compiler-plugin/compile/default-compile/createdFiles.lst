@@ -1,3 +1,4 @@
+view\EmployeeProfileView$5.class
 view\PhongBanView$4.class
 model\Connect.class
 view\EmployeeProfileView$ButtonRenderer.class
@@ -15,6 +16,7 @@ model\ChucVuModel$TrangThaiChucVu.class
 view\EmployeeProfileView.class
 model\NhanSuModel.class
 view\EmployeeProfileView$1.class
+view\PhongBanView$5.class
 controller\ChucVuController.class
 model\PhongBanModel.class
 view\mainActivityView.class

@@ -21,10 +21,22 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import model.NhanSuModel;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  * @author Windows
@@ -122,6 +134,23 @@ public class EmployeeProfileView extends JPanel {
         addButton.setBackground(new Color(103, 65, 217));
         addButton.setForeground(Color.WHITE);
         filterPanel.add(addButton);
+        
+        JButton exportExcelButton = new JButton("Xuất Excel");
+        exportExcelButton.setBackground(new Color(46, 204, 113)); // Màu xanh lá cho nổi bật
+        exportExcelButton.setForeground(Color.WHITE);
+        // Thêm biểu tượng
+        URL excelUrl = getClass().getResource("/images/export.png");
+        ImageIcon excelIcon = (excelUrl != null) ? resizeIcon(new ImageIcon(excelUrl), 20, 20) : new ImageIcon();
+        exportExcelButton.setIcon(excelIcon);
+        exportExcelButton.addActionListener(e -> {
+            exportExcelButton.setEnabled(false); // Vô hiệu hóa nút
+            try {
+                exportToExcel();
+            } finally {
+                exportExcelButton.setEnabled(true); // Kích hoạt lại nút
+            }
+        });
+        filterPanel.add(exportExcelButton);
 
         topPanel.add(filterPanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
@@ -162,6 +191,10 @@ public class EmployeeProfileView extends JPanel {
        
         // Sample data (replace with actual data in a real application)
         setupAddButtonListener();
+        
+  
+        
+     
 
         employeeTable = new JTable(tableModel);
         employeeTable.setRowHeight(50);
@@ -175,16 +208,7 @@ public class EmployeeProfileView extends JPanel {
         JScrollPane tableScrollPane = new JScrollPane(employeeTable);
         add(tableScrollPane, BorderLayout.CENTER);
 
-        // Pagination panel
-        JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        paginationPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        JButton prevButton = new JButton("<");
-        JLabel pageLabel = new JLabel("1");
-        JButton nextButton = new JButton(">");
-        paginationPanel.add(prevButton);
-        paginationPanel.add(pageLabel);
-        paginationPanel.add(nextButton);
-        add(paginationPanel, BorderLayout.SOUTH);
+        
     }
     
     private void loadDataFromDatabase(){
@@ -204,6 +228,7 @@ public class EmployeeProfileView extends JPanel {
             tableModel.addRow(row);
         }
     }
+    
     // Method để refresh lại dữ liệu bảng
     private void refreshTableData() {
         // Xóa tất cả dữ liệu hiện tại
@@ -573,6 +598,169 @@ public class EmployeeProfileView extends JPanel {
             // Hiển thị dialog
             dialog.setVisible(true);
         }
+
+    private void exportToExcel() {
+        try {
+            //tạo workbook và sheet
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("DanhSachNhanSu");
+            XSSFRow row = null;
+            Cell cell = null;
+            
+            // Định dạng ngày hiện tại
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            String currentDate = dateFormat.format(new Date());
+            // Tạo style để căn giữa
+            CellStyle centerStyle = workbook.createCellStyle();
+            centerStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+            // Tiêu đề chính
+            row = sheet.createRow(0);
+            cell = row.createCell(0, CellType.STRING);
+            cell.setCellValue("DANH SÁCH NHÂN SỰ");
+            cell.setCellStyle(centerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 12)); // Gộp cột từ 0 đến 12
+            
+            // Dòng thông tin bổ sung
+            row = sheet.createRow(1);
+            cell = row.createCell(0, CellType.STRING);
+            cell.setCellValue("Thời gian xuất: " + currentDate);
+            cell.setCellStyle(centerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 12)); // Gộp cột từ 0 đến 12
+            
+            // Header của bảng
+            row = sheet.createRow(3);
+            String[] headers = {
+                "STT", "Mã NV", "Họ và tên", "Giới tính", "Ngày sinh",
+                "Địa chỉ", "Số điện thoại", "Email", "Trình độ học vấn",
+                "Mã phòng ban", "Mã chức vụ", "Ngày vào làm", "Tình trạng"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                cell = row.createCell(i, CellType.STRING);
+                cell.setCellValue(headers[i]);
+            }
+            // Lấy dữ liệu từ tableModel
+            List<NhanSuModel> nhanSuList = new ArrayList<>();
+            nhansu = new nhanSuController();
+            List<NhanSuModel> allNhanSu = nhansu.getAll(); // Lấy toàn bộ danh sách để tìm kiếm
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                String maSo = (String) tableModel.getValueAt(i, 0);
+                // Tìm NhanSuModel tương ứng với maSo
+                for (NhanSuModel nhanSu : allNhanSu) {
+                    if (nhanSu.getMaSo().equals(maSo)) {
+                        nhanSuList.add(nhanSu);
+                        break;
+                    }
+                }
+            }
+            
+
+            // Điền dữ liệu
+            for (int i = 0; i < nhanSuList.size(); i++) {
+                NhanSuModel nhanSu = nhanSuList.get(i);
+                row = sheet.createRow(4 + i);
+
+                // STT
+                cell = row.createCell(0, CellType.NUMERIC);
+                cell.setCellValue(i + 1);
+
+                // Mã NV
+                cell = row.createCell(1, CellType.STRING);
+                cell.setCellValue(nhanSu.getMaSo() != null ? nhanSu.getMaSo() : "");
+
+                // Họ và tên
+                cell = row.createCell(2, CellType.STRING);
+                cell.setCellValue(nhanSu.getHoTen() != null ? nhanSu.getHoTen() : "");
+
+                // Giới tính
+                cell = row.createCell(3, CellType.STRING);
+                cell.setCellValue(nhanSu.getGioiTinh() != null ? nhanSu.getGioiTinh() : "");
+
+                // Ngày sinh
+                cell = row.createCell(4, CellType.STRING);
+                cell.setCellValue(nhanSu.getNgaySinh() != null ? dateFormat.format(nhanSu.getNgaySinh()) : "");
+
+                // Địa chỉ
+                cell = row.createCell(5, CellType.STRING);
+                cell.setCellValue(nhanSu.getDiaChi() != null ? nhanSu.getDiaChi() : "");
+
+                // Số điện thoại
+                cell = row.createCell(6, CellType.STRING);
+                cell.setCellValue(nhanSu.getSoDienThoai() != null ? nhanSu.getSoDienThoai() : "");
+
+                // Email
+                cell = row.createCell(7, CellType.STRING);
+                cell.setCellValue(nhanSu.getEmail() != null ? nhanSu.getEmail() : "");
+
+                // Trình độ học vấn
+                cell = row.createCell(8, CellType.STRING);
+                cell.setCellValue(nhanSu.getTrinhDoHocVan() != null ? nhanSu.getTrinhDoHocVan() : "");
+
+                // Mã phòng ban
+                cell = row.createCell(9, CellType.NUMERIC);
+                cell.setCellValue(nhanSu.getMaPhongBan());
+
+                // Mã chức vụ
+                cell = row.createCell(10, CellType.NUMERIC);
+                cell.setCellValue(nhanSu.getMaChucVu());
+
+                // Ngày vào làm
+                cell = row.createCell(11, CellType.STRING);
+                cell.setCellValue(nhanSu.getNgayVaoLam() != null ? dateFormat.format(nhanSu.getNgayVaoLam()) : "");
+
+                // Tình trạng
+                cell = row.createCell(12, CellType.STRING);
+                cell.setCellValue(nhanSu.getTinhTrang() != null ? nhanSu.getTinhTrang() : "");
+            }
+            // Tự động điều chỉnh độ rộng cột
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Lưu file
+            // Sử dụng JFileChooser để chọn đường dẫn
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setSelectedFile(new File("DanhSachNhanSu.xlsx")); // Đặt tên file mặc định
+            
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return f.isDirectory() || f.getName().toLowerCase().endsWith(".xlsx");
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Excel Files (*.xlsx)";
+                }
+            });
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                // Đảm bảo file có đuôi .xlsx
+                if (!file.getName().toLowerCase().endsWith(".xlsx")) {
+                    file = new File(file.getAbsolutePath() + ".xlsx");
+                }
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    workbook.write(fos);
+                    JOptionPane.showMessageDialog(this, "Xuất Excel thành công tại " + file.getAbsolutePath(), "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Lỗi khi lưu file Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                // Người dùng hủy chọn file
+                workbook.close();
+                return;
+            }
+
+            try {
+                workbook.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
   // Renderer cho cột "Thao tác"
     class ButtonRenderer implements TableCellRenderer {

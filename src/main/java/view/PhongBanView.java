@@ -5,9 +5,9 @@
 package view;
 
 
-import controller.ChucVuController;
+
 import controller.PhongBanController;
-import controller.nhanSuController;
+
 import org.jdatepicker.impl.*; 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,7 +27,12 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +43,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -49,9 +55,16 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import model.NhanSuModel;
+
 
 import model.PhongBanModel;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -65,6 +78,7 @@ public class PhongBanView extends JPanel{
     private JButton addButton;
     private PhongBanController phongban;
     private PhongBanModel selectedPhongBan;
+    private List<PhongBanModel> currentPhongBanList = new ArrayList<>();
     public PhongBanView(){
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
@@ -144,6 +158,24 @@ public class PhongBanView extends JPanel{
         addButton.setBackground(new Color(103, 65, 217));
         addButton.setForeground(Color.WHITE);
         filterPanel.add(addButton);
+        
+        JButton exportExcelButton = new JButton("Xuất Excel");
+        exportExcelButton.setBackground(new Color(46, 204, 113)); // Màu xanh lá cho nổi bật
+        exportExcelButton.setForeground(Color.WHITE);
+        // Thêm biểu tượng
+        URL excelUrl = getClass().getResource("/images/export.png");
+        ImageIcon excelIcon = (excelUrl != null) ? resizeIcon(new ImageIcon(excelUrl), 20, 20) : new ImageIcon();
+        exportExcelButton.setIcon(excelIcon);
+        exportExcelButton.addActionListener(e -> {
+            exportExcelButton.setEnabled(false); // Vô hiệu hóa nút
+            try {
+                exportToExcel();
+            } finally {
+                exportExcelButton.setEnabled(true); // Kích hoạt lại nút
+            }
+        });
+        filterPanel.add(exportExcelButton);
+
 
         topPanel.add(filterPanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
@@ -196,24 +228,15 @@ public class PhongBanView extends JPanel{
         JScrollPane tableScrollPane = new JScrollPane(phongbanTable);
         add(tableScrollPane, BorderLayout.CENTER);
 
-        // Pagination panel
-        JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        paginationPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        JButton prevButton = new JButton("<");
-        JLabel pageLabel = new JLabel("1");
-        JButton nextButton = new JButton(">");
-        paginationPanel.add(prevButton);
-        paginationPanel.add(pageLabel);
-        paginationPanel.add(nextButton);
-        add(paginationPanel, BorderLayout.SOUTH);
     }
+    
     private void loadDataFromDatabase(){
        phongban = new PhongBanController();
-       List<PhongBanModel> phongBanList = phongban.getAll();
-       if (phongBanList.isEmpty()) {
+       currentPhongBanList = phongban.getAll();
+       if (currentPhongBanList.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Không có dữ liệu hoặc lỗi kết nối cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
        }
-         for (PhongBanModel phongBan : phongBanList) {
+         for (PhongBanModel phongBan : currentPhongBanList) {
             Object[] row = {
                 phongBan.getMaPhongBan(),
                 phongBan.getTenPhongBan(),
@@ -227,21 +250,14 @@ public class PhongBanView extends JPanel{
             tableModel.addRow(row);
         }
     }
-    // Method để refresh lại dữ liệu bảng
-    private void refreshTableData() {
-        // Xóa tất cả dữ liệu hiện tại
-        tableModel.setRowCount(0);
-        
-        // Load lại dữ liệu từ database
-        loadDataFromDatabase();
-    }
+
     private void searchPhongBan(String searchText) {
         phongban = new PhongBanController();
-        List<PhongBanModel> filteredList = phongban.searchByTenPhongBan(searchText);
+        currentPhongBanList = phongban.searchByTenPhongBan(searchText);
 
         // Cập nhật bảng với danh sách đã lọc
         tableModel.setRowCount(0);
-        for (PhongBanModel phongBan : filteredList) {
+        for (PhongBanModel phongBan : currentPhongBanList) {
             Object[] row = {
                 phongBan.getMaPhongBan(),
                 phongBan.getTenPhongBan(),
@@ -257,10 +273,10 @@ public class PhongBanView extends JPanel{
     }
     private void filterPhongBanByStatus(String selectedStatus){
         phongban = new PhongBanController();
-        List<PhongBanModel> filteredList = phongban.getByTinhTrang(selectedStatus);
+        currentPhongBanList = phongban.getByTinhTrang(selectedStatus);
         // Cập nhật bảng với danh sách đã lọc
         tableModel.setRowCount(0);
-        for (PhongBanModel phongBan : filteredList) {
+        for (PhongBanModel phongBan : currentPhongBanList) {
             Object[] row = {
                 phongBan.getMaPhongBan(),
                 phongBan.getTenPhongBan(),
@@ -273,6 +289,15 @@ public class PhongBanView extends JPanel{
             };
             tableModel.addRow(row);
         }
+    }
+    
+    // Method để refresh lại dữ liệu bảng
+    private void refreshTableData() {
+        // Xóa tất cả dữ liệu hiện tại
+        tableModel.setRowCount(0);
+        
+        // Load lại dữ liệu từ database
+        loadDataFromDatabase();
     }
     // Phương thức chung để tạo panel chứa các nút
     private JPanel createButtonPanel(boolean withListeners, ActionListener viewListener, ActionListener editListener, ActionListener deleteListener) {
@@ -473,6 +498,139 @@ public class PhongBanView extends JPanel{
         }); 
     }
 
+    private void exportToExcel() {
+        try {
+            // Tạo workbook và sheet
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("DanhSachPhongBan");
+            XSSFRow row = null;
+            Cell cell = null;
+            
+            // Định dạng ngày hiện tại
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            String currentDate = dateFormat.format(new Date());
+            // Tạo style để căn giữa
+            CellStyle centerStyle = workbook.createCellStyle();
+            centerStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+
+            // Tiêu đề chính
+            row = sheet.createRow(0);
+            cell = row.createCell(0, CellType.STRING);
+            cell.setCellValue("DANH SÁCH PHÒNG BAN");
+            cell.setCellStyle(centerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7)); // Gộp cột từ 0 đến 12
+            
+            // Dòng thông tin bổ sung
+            row = sheet.createRow(1);
+            cell = row.createCell(0, CellType.STRING);
+            cell.setCellValue("Thời gian xuất: " + currentDate);
+            cell.setCellStyle(centerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 7)); // Gộp cột từ 0 đến 12
+
+            // Header của bảng
+            row = sheet.createRow(3);
+            String[] headers = {
+                "STT", "Mã PB", "Tên phòng ban", "Mô tả", "Số nhân viên",
+                "Ngày thành lập", "Trạng thái", "Ngày tạo"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                cell = row.createCell(i, CellType.STRING);
+                cell.setCellValue(headers[i]);
+            }
+
+            // Lấy dữ liệu từ currentPhongBanList
+            List<PhongBanModel> phongBanList = new ArrayList<>(currentPhongBanList);
+
+
+
+            // Điền dữ liệu
+            for (int i = 0; i < phongBanList.size(); i++) {
+                PhongBanModel phongBan = phongBanList.get(i);
+                row = sheet.createRow(4 + i);
+
+                // STT
+                cell = row.createCell(0, CellType.NUMERIC);
+                cell.setCellValue(i + 1);
+
+                // Mã PB
+                cell = row.createCell(1, CellType.NUMERIC);
+                cell.setCellValue(phongBan.getMaPhongBan());
+
+                // Tên phòng ban
+                cell = row.createCell(2, CellType.STRING);
+                cell.setCellValue(phongBan.getTenPhongBan() != null ? phongBan.getTenPhongBan() : "");
+
+                // Mô tả
+                cell = row.createCell(3, CellType.STRING);
+                cell.setCellValue(phongBan.getMoTa() != null ? phongBan.getMoTa() : "");
+
+                // Số nhân viên
+                cell = row.createCell(4, CellType.NUMERIC);
+                cell.setCellValue(phongBan.getSoNhanVien());
+
+                // Ngày thành lập
+                cell = row.createCell(5, CellType.STRING);
+                cell.setCellValue(phongBan.getNgayThanhLap() != null ? dateFormat.format(phongBan.getNgayThanhLap()) : "");
+
+                // Trạng thái
+                cell = row.createCell(6, CellType.STRING);
+                cell.setCellValue(phongBan.getTrangThai() != null ? phongBan.getTrangThai().toString() : "");
+
+                // Ngày tạo
+                cell = row.createCell(7, CellType.STRING);
+                cell.setCellValue(phongBan.getNgayTao() != null ? dateFormat.format(phongBan.getNgayTao()) : "");
+            }
+            
+            // Tự động điều chỉnh độ rộng cột
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+
+            // Sử dụng JFileChooser để chọn đường dẫn
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setSelectedFile(new File("DanhSachPhongBan.xlsx")); // Đặt tên file mặc định
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return f.isDirectory() || f.getName().toLowerCase().endsWith(".xlsx");
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Excel Files (*.xlsx)";
+                }
+            });
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                // Đảm bảo file có đuôi .xlsx
+                if (!file.getName().toLowerCase().endsWith(".xlsx")) {
+                    file = new File(file.getAbsolutePath() + ".xlsx");
+                }
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    workbook.write(fos);
+                    JOptionPane.showMessageDialog(this, "Xuất Excel thành công tại " + file.getAbsolutePath(), "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Lỗi khi lưu file Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                // Người dùng hủy chọn file
+                workbook.close();
+                return;
+            }
+
+            try {
+                workbook.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
     class ButtonRenderer implements TableCellRenderer {
 
         private JPanel panel;
