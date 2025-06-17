@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 C:\Users\admin\Downloads\QLHSNS_JAVANANGCAO\src\main\java\model\NhanSuModel.java
 C:\Users\admin\Downloads\QLHSNS_JAVANANGCAO\src\main\java\com\mycompany\quanlyhosonhansu\QuanLyHoSoNhanSu.java
 C:\Users\admin\Downloads\QLHSNS_JAVANANGCAO\src\main\java\model\LuongModel.java
@@ -12,3 +13,17 @@ C:\Users\admin\Downloads\QLHSNS_JAVANANGCAO\src\main\java\model\ChucVuModel.java
 C:\Users\admin\Downloads\QLHSNS_JAVANANGCAO\src\main\java\model\PhongBanModel.java
 C:\Users\admin\Downloads\QLHSNS_JAVANANGCAO\src\main\java\view\EmployeeProfile.java
 C:\Users\admin\Downloads\QLHSNS_JAVANANGCAO\src\main\java\view\LuongView.java
+=======
+E:\quanLyHoSoNhanSu\src\main\java\model\ContractModel.java
+E:\quanLyHoSoNhanSu\src\main\java\model\Connect.java
+E:\quanLyHoSoNhanSu\src\main\java\model\PhongBanModel.java
+E:\quanLyHoSoNhanSu\src\main\java\view\EmployeeProfileView.java
+E:\quanLyHoSoNhanSu\src\main\java\model\NhanSuModel.java
+E:\quanLyHoSoNhanSu\src\main\java\view\PhongBanView.java
+E:\quanLyHoSoNhanSu\src\main\java\controller\nhanSuController.java
+E:\quanLyHoSoNhanSu\src\main\java\com\mycompany\quanlyhosonhansu\QuanLyHoSoNhanSu.java
+E:\quanLyHoSoNhanSu\src\main\java\controller\ChucVuController.java
+E:\quanLyHoSoNhanSu\src\main\java\controller\PhongBanController.java
+E:\quanLyHoSoNhanSu\src\main\java\view\mainActivityView.java
+E:\quanLyHoSoNhanSu\src\main\java\model\ChucVuModel.java
+>>>>>>> 34682488408a63a8d3a8ab5ddea0532a579817da

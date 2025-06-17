@@ -24,7 +24,27 @@ public class ChucVuController {
             conn = mc.getConnection();
             if (conn != null) {
                 stmt = conn.createStatement();
+<<<<<<< HEAD
                 rs = stmt.executeQuery("SELECT * FROM chuc_vu ORDER BY ma_chuc_vu");
+=======
+                rs = stmt.executeQuery("SELECT * FROM chuc_vu");
+                
+                while(rs.next()){
+                    ChucVuModel chucvu = new ChucVuModel();
+                    chucvu.setMaChucVu(rs.getInt("ma_chuc_vu"));
+                    chucvu.setTenChucVu(rs.getString("ten_chuc_vu"));
+                    chucvu.setMoTa(rs.getString("mo_ta"));
+                    chucvu.setCapBac(rs.getObject("cap_bac") != null ? rs.getInt("cap_bac") : null);
+                    chucvu.setPhuCapMacDinh(rs.getBigDecimal("phu_cap_mac_dinh"));
+                    chucvu.setQuyenHan(rs.getString("quyen_han"));
+                    
+                    // Xử lý enum
+                    String trangThaiStr = rs.getString("trang_thai");
+                    TrangThaiChucVu trangThai = TrangThaiChucVu.valueOf(trangThaiStr);
+                    chucvu.setTrangThai(trangThai);
+                    
+                    chucvu.setNgayTao(rs.getTimestamp("ngay_tao"));
+>>>>>>> 34682488408a63a8d3a8ab5ddea0532a579817da
 
                 while (rs.next()) {
                     ChucVuModel chucvu = mapResultSetToChucVu(rs);
