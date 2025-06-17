@@ -14,7 +14,6 @@ public class ChucVuModel {
     private String tenChucVu;
     private String moTa;
     private Integer capBac;
-    private BigDecimal luongCoBan;
     private BigDecimal phuCapMacDinh;
     private String quyenHan;
     private TrangThaiChucVu trangThai;
@@ -24,13 +23,12 @@ public class ChucVuModel {
     }
     
 
-    public ChucVuModel(int maChucVu, String tenChucVu, String moTa, Integer capBac, BigDecimal luongCoBan,
+    public ChucVuModel(int maChucVu, String tenChucVu, String moTa, Integer capBac,
                        BigDecimal phuCapMacDinh, String quyenHan, TrangThaiChucVu trangThai, Timestamp ngayTao) {
         this.maChucVu = maChucVu;
         this.tenChucVu = tenChucVu;
         this.moTa = moTa;
         this.capBac = capBac;
-        this.luongCoBan = luongCoBan;
         this.phuCapMacDinh = phuCapMacDinh;
         this.quyenHan = quyenHan;
         this.trangThai = trangThai;
@@ -68,14 +66,6 @@ public class ChucVuModel {
 
     public void setCapBac(Integer capBac) {
         this.capBac = capBac;
-    }
-
-    public BigDecimal getLuongCoBan() {
-        return luongCoBan;
-    }
-
-    public void setLuongCoBan(BigDecimal luongCoBan) {
-        this.luongCoBan = luongCoBan;
     }
 
     public BigDecimal getPhuCapMacDinh() {

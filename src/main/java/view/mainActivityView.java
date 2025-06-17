@@ -8,7 +8,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
+import java.util.Map;
 import javax.swing.border.EmptyBorder;
+import controller.LuongController;
+import model.Connect;
+import view.LuongView;
+import java.sql.Connection;
+import view.ChucVuView;
 
 /**
  * @author Windows
@@ -177,14 +183,49 @@ public class mainActivityView extends JFrame {
     }
 
     private void handlePositionTab() {
-        System.out.println("=== XỬ LÝ TAB CHỨC VỤ ===");
- 
+    System.out.println("=== XỬ LÝ TAB CHỨC VỤ ===");
+    String key = "💼 Chức Vụ".trim();
+
+    ChucVuView chucVuView = new ChucVuView();
+    contentPanels.put(key, chucVuView);
+
+    mainContentPanel.removeAll(); // quan trọng
+    for (String item : menuItems) {
+        String panelKey = item.trim();
+        JPanel panel = contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2)));
+        mainContentPanel.add(panel, panelKey);
     }
+
+    cardLayout.show(mainContentPanel, key);
+    mainContentPanel.revalidate();
+    mainContentPanel.repaint();
+}
+
 
     private void handleSalaryTab() {
-        System.out.println("=== XỬ LÝ TAB LƯƠNG & PHỤ CẤP ===");
+    System.out.println("=== XỬ LÝ TAB LƯƠNG & PHỤ CẤP ===");
+      String key = "💰 Lương & Phụ Cấp".trim();
 
+    try {
+        LuongView luongPanel = new LuongView();
+        Connection conn = new Connect().getConnection();
+        new LuongController(luongPanel, conn);
+
+        contentPanels.put(key, luongPanel);
+        mainContentPanel.removeAll();
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
+        }
+        cardLayout.show(mainContentPanel, key);
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Lỗi tải giao diện lương");
     }
+    }
+    
 
     private void handleContractTab() {
         System.out.println("=== XỬ LÝ TAB HỢP ĐỒNG ===");
