@@ -1,5 +1,6 @@
 package view;
 
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -105,4 +106,5 @@ public class LuongView extends JPanel {
         if (row == -1) return -1;
         return (int) table.getValueAt(row, 0);
     }
+
 }

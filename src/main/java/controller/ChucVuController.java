@@ -24,28 +24,7 @@ public class ChucVuController {
             conn = mc.getConnection();
             if (conn != null) {
                 stmt = conn.createStatement();
-<<<<<<< HEAD
                 rs = stmt.executeQuery("SELECT * FROM chuc_vu ORDER BY ma_chuc_vu");
-=======
-                rs = stmt.executeQuery("SELECT * FROM chuc_vu");
-                
-                while(rs.next()){
-                    ChucVuModel chucvu = new ChucVuModel();
-                    chucvu.setMaChucVu(rs.getInt("ma_chuc_vu"));
-                    chucvu.setTenChucVu(rs.getString("ten_chuc_vu"));
-                    chucvu.setMoTa(rs.getString("mo_ta"));
-                    chucvu.setCapBac(rs.getObject("cap_bac") != null ? rs.getInt("cap_bac") : null);
-                    chucvu.setPhuCapMacDinh(rs.getBigDecimal("phu_cap_mac_dinh"));
-                    chucvu.setQuyenHan(rs.getString("quyen_han"));
-                    
-                    // Xử lý enum
-                    String trangThaiStr = rs.getString("trang_thai");
-                    TrangThaiChucVu trangThai = TrangThaiChucVu.valueOf(trangThaiStr);
-                    chucvu.setTrangThai(trangThai);
-                    
-                    chucvu.setNgayTao(rs.getTimestamp("ngay_tao"));
->>>>>>> 34682488408a63a8d3a8ab5ddea0532a579817da
-
                 while (rs.next()) {
                     ChucVuModel chucvu = mapResultSetToChucVu(rs);
                     list.add(chucvu);
@@ -94,16 +73,16 @@ public class ChucVuController {
         String sql = "INSERT INTO chuc_vu (ten_chuc_vu, mo_ta, cap_bac, phu_cap_mac_dinh, quyen_han, trang_thai) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = new Connect().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, cv.getTenChucVu());
-                ps.setString(2, cv.getMoTa());
-                if (cv.getCapBac() == null) {
-                    ps.setNull(3, java.sql.Types.INTEGER);
-                } else {
-                    ps.setInt(3, cv.getCapBac());
-                }
-                ps.setBigDecimal(4, cv.getPhuCapMacDinh());
-                ps.setString(5, cv.getQuyenHan());
-                ps.setString(6, cv.getTrangThai().name());
+            ps.setString(1, cv.getTenChucVu());
+            ps.setString(2, cv.getMoTa());
+            if (cv.getCapBac() == null) {
+                ps.setNull(3, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(3, cv.getCapBac());
+            }
+            ps.setBigDecimal(4, cv.getPhuCapMacDinh());
+            ps.setString(5, cv.getQuyenHan());
+            ps.setString(6, cv.getTrangThai().name());
             int rows = ps.executeUpdate();
             return rows > 0;
         } catch (Exception e) {
@@ -151,16 +130,14 @@ public class ChucVuController {
     public List<String> getChucVuDisplayList() {
         List<String> displayList = new ArrayList<>();
         List<ChucVuModel> chucVus = getAll();
-
         for (ChucVuModel chucVu : chucVus) {
             String display = chucVu.getMaChucVu() + " - " + chucVu.getTenChucVu();
             displayList.add(display);
         }
-
         return displayList;
     }
 
-    // Hàm map ResultSet sang ChucVuModel để tránh viết lại nhiều lần
+    // Hàm map ResultSet sang ChucVuModel để tái sử dụng
     private ChucVuModel mapResultSetToChucVu(ResultSet rs) throws Exception {
         ChucVuModel chucvu = new ChucVuModel();
         chucvu.setMaChucVu(rs.getInt("ma_chuc_vu"));
@@ -175,7 +152,6 @@ public class ChucVuController {
         chucvu.setTrangThai(trangThai);
 
         chucvu.setNgayTao(rs.getTimestamp("ngay_tao"));
-
         return chucvu;
     }
 }

@@ -224,7 +224,6 @@ public class mainActivityView extends JFrame {
         LuongView luongPanel = new LuongView();
         Connection conn = new Connect().getConnection();
         new LuongController(luongPanel, conn);
-
         contentPanels.put(key, luongPanel);
         mainContentPanel.removeAll();
         for (String item : menuItems) {

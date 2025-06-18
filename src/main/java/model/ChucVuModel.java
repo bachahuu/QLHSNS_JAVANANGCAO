@@ -21,13 +21,7 @@ public class ChucVuModel {
 
     public ChucVuModel() {
     }
-    
-
-<<<<<<< HEAD
-    public ChucVuModel(int maChucVu, String tenChucVu, String moTa, Integer capBac,
-=======
     public ChucVuModel(int maChucVu, String tenChucVu, String moTa, Integer capBac, 
->>>>>>> 34682488408a63a8d3a8ab5ddea0532a579817da
                        BigDecimal phuCapMacDinh, String quyenHan, TrangThaiChucVu trangThai, Timestamp ngayTao) {
         this.maChucVu = maChucVu;
         this.tenChucVu = tenChucVu;
@@ -71,10 +65,6 @@ public class ChucVuModel {
     public void setCapBac(Integer capBac) {
         this.capBac = capBac;
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 34682488408a63a8d3a8ab5ddea0532a579817da
     public BigDecimal getPhuCapMacDinh() {
         return phuCapMacDinh;
     }
