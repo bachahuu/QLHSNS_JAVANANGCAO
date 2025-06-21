@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 11, 2025 at 07:41 AM
+-- Generation Time: Jun 21, 2025 at 10:24 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -110,7 +110,8 @@ INSERT INTO `hop_dong` (`ma_hop_dong`, `ma_nhan_vien`, `loai_hop_dong`, `ngay_ba
 (23, 103, 'Chinh_thuc', '2020-07-01', NULL, '2020-06-25', 'Con_hieu_luc', NULL),
 (24, 104, 'Thoi_vu', '2021-01-15', '2024-01-15', '2021-01-10', 'Con_hieu_luc', NULL),
 (26, 106, 'Chinh_thuc', '2021-03-15', NULL, '2021-03-10', 'Con_hieu_luc', NULL),
-(27, 107, 'Thoi_vu', '2021-04-01', '2024-04-01', '2021-03-25', 'Con_hieu_luc', NULL);
+(27, 107, 'Thoi_vu', '2021-04-01', '2024-04-01', '2021-03-25', 'Con_hieu_luc', NULL),
+(28, 111, 'Thu_viec', '2025-06-04', '2025-06-30', '2025-06-04', 'Con_hieu_luc', 10000000.00);
 
 -- --------------------------------------------------------
 
@@ -214,7 +215,8 @@ INSERT INTO `nhan_vien` (`ma_nhan_vien`, `ma_so`, `ho_ten`, `ngay_sinh`, `gioi_t
 (106, 'NV012', 'Đinh Thị Mai', '1992-04-28', 'Nu', '963 Đường DEF, Hà Nội', '0923456780', 'mai.dinh@company.com', 'Cao_dang', 6, 6, '2021-04-01', 'Dang_lam'),
 (107, 'NV015', 'Võ Văn Phúc', '1987-01-09', 'Nam', '468 Đường MNO, Hà Nội', '0956789013', 'phuc.vo@company.com', 'Dai_hoc', 10, 4, '2020-08-16', 'Da_nghi'),
 (109, 'NV020', 'Hồ Xuân Hương', '1993-01-01', 'Nu', 'Bồng Lai', '01082356487', 'huong@gmail.com', 'Dai_hoc', 1, 1, '2004-10-01', 'Da_nghi'),
-(110, 'NV021', 'trịnh hoàng tùng', '2007-05-01', NULL, 'hà nội', '0348830862', 'tung@gmail.com', 'Dai_hoc', 7, 5, '2015-06-02', 'Dang_lam');
+(110, 'NV021', 'trịnh hoàng tùng', '2007-05-01', NULL, 'hà nội', '0348830862', 'tung@gmail.com', 'Dai_hoc', 7, 5, '2015-06-02', 'Dang_lam'),
+(111, 'NV00132', 'Nguyễn Đình Nam', '2025-06-16', 'Nam', 'Bắc Ninh', '0989655521', 'nam@gmail.com', 'Dai_hoc', 7, 5, '2025-06-04', 'Dang_lam');
 
 -- --------------------------------------------------------
 
@@ -264,15 +266,15 @@ CREATE TABLE `tai_khoan` (
 --
 
 INSERT INTO `tai_khoan` (`ma_tai_khoan`, `ma_nhan_vien`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `trang_thai`) VALUES
-(1, 2, 'admin', '$2y$10$abcdefghijklmnopqrstuvwxyz', 'Quan_tri', 'Hoat_dong'),
-(2, 97, 'binh.tran', '$2y$10$bcdefghijklmnopqrstuvwxyza', 'Quan_tri', 'Hoat_dong'),
-(3, 98, 'cuong.le', '$2y$10$cdefghijklmnopqrstuvwxyzab', 'Quan_tri', 'Hoat_dong'),
+(1, 2, 'admin', '3L4N9mLm3iM1GCGcbOkgsik6N4BWkTNVjA0e0ZDZ4vgWaGB701DYdqdnH+lNq7MK', 'Quan_tri', 'Hoat_dong'),
+(3, 98, 'cuong.le', '', 'Quan_tri', 'Bi_khoa'),
 (4, 99, 'dung.pham', '$2y$10$defghijklmnopqrstuvwxyzabc', 'Quan_tri', 'Hoat_dong'),
 (5, 100, 'em.hoang', '$2y$10$efghijklmnopqrstuvwxyzabcd', 'Nhan_vien', 'Hoat_dong'),
 (8, 103, 'hanh.ngo', '$2y$10$hijklmnopqrstuvwxyzabcdefg', 'Nhan_vien', 'Hoat_dong'),
 (9, 104, 'inh.bui', '$2y$10$ijklmnopqrstuvwxyzabcdefgh', 'Nhan_vien', 'Hoat_dong'),
 (11, 106, 'long.truong', '$2y$10$klmnopqrstuvwxyzabcdefghij', 'Nhan_vien', 'Hoat_dong'),
-(12, 107, 'mai.dinh', '$2y$10$lmnopqrstuvwxyzabcdefghijk', 'Nhan_vien', 'Hoat_dong');
+(12, 107, 'mai.dinh', '$2y$10$lmnopqrstuvwxyzabcdefghijk', 'Nhan_vien', 'Hoat_dong'),
+(14, 2, 'Nam', 'nam', 'Nhan_vien', 'Hoat_dong');
 
 --
 -- Indexes for dumped tables
@@ -355,7 +357,7 @@ ALTER TABLE `chuc_vu`
 -- AUTO_INCREMENT for table `hop_dong`
 --
 ALTER TABLE `hop_dong`
-  MODIFY `ma_hop_dong` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `ma_hop_dong` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `luong`
@@ -373,7 +375,7 @@ ALTER TABLE `nghi_phep`
 -- AUTO_INCREMENT for table `nhan_vien`
 --
 ALTER TABLE `nhan_vien`
-  MODIFY `ma_nhan_vien` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+  MODIFY `ma_nhan_vien` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
 
 --
 -- AUTO_INCREMENT for table `phong_ban`
@@ -385,7 +387,7 @@ ALTER TABLE `phong_ban`
 -- AUTO_INCREMENT for table `tai_khoan`
 --
 ALTER TABLE `tai_khoan`
-  MODIFY `ma_tai_khoan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `ma_tai_khoan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables
@@ -419,8 +421,8 @@ ALTER TABLE `nghi_phep`
 -- Constraints for table `nhan_vien`
 --
 ALTER TABLE `nhan_vien`
-  ADD CONSTRAINT `nhan_vien_ibfk_1` FOREIGN KEY (`ma_phong_ban`) REFERENCES `phong_ban` (`ma_phong_ban`),
-  ADD CONSTRAINT `nhan_vien_ibfk_2` FOREIGN KEY (`ma_chuc_vu`) REFERENCES `chuc_vu` (`ma_chuc_vu`);
+  ADD CONSTRAINT `nhan_vien_ibfk_1` FOREIGN KEY (`ma_phong_ban`) REFERENCES `phong_ban` (`ma_phong_ban`) ON DELETE CASCADE,
+  ADD CONSTRAINT `nhan_vien_ibfk_2` FOREIGN KEY (`ma_chuc_vu`) REFERENCES `chuc_vu` (`ma_chuc_vu`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `tai_khoan`

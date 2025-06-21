@@ -1,7 +1,7 @@
 package controller;
 
 import model.LuongModel;
-import view.LuongView;
+import view_admin.LuongView;
 
 import javax.swing.*;
 import java.awt.event.*;

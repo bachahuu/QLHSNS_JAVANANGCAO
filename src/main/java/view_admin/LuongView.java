@@ -1,4 +1,4 @@
-package view;
+package view_admin;
 
 
 import javax.swing.*;

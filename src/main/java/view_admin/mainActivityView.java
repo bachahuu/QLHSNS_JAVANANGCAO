@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package view;
+package view_admin;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +12,7 @@ import java.util.Map;
 import javax.swing.border.EmptyBorder;
 import controller.LuongController;
 import model.Connect;
-import view.LuongView;
+import view_admin.LuongView;
 import java.sql.Connection;
 import view.ChucVuView;
 
@@ -46,14 +46,73 @@ public class mainActivityView extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Header
+ // Header
         JPanel header = new JPanel();
         header.setBackground(new Color(33, 150, 243));
         header.setPreferredSize(new Dimension(getWidth(), 50));
+        header.setLayout(new BorderLayout()); // Sử dụng BorderLayout để căn chỉnh
+        // Tiêu đề
         JLabel title = new JLabel("HỆ THỐNG QUẢN LÝ NHÂN SỰ");
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         title.setForeground(Color.WHITE);
-        header.add(title);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        header.add(title, BorderLayout.CENTER);
+        
+        // Nút đăng xuất
+        JButton logoutButton = new JButton();
+        ImageIcon icon = new ImageIcon(getClass().getResource("/images/logout.png"));
+        if (icon.getImageLoadStatus() == MediaTracker.ERRORED || icon.getImage() == null) {
+            System.out.println("Không thể tải file ảnh: /images/logout.png, sử dụng biểu tượng Unicode");
+            logoutButton.setText("🡦 Đăng Xuất"); // Dự phòng bằng Unicode
+        } else {
+            // Điều chỉnh kích thước icon để phù hợp với nút
+            Image img = icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH); // Kích thước 16x16
+            icon = new ImageIcon(img);
+            logoutButton.setIcon(icon);
+            logoutButton.setText("Đăng Xuất"); // Đảm bảo text hiển thị
+            logoutButton.setHorizontalTextPosition(SwingConstants.RIGHT); // Text bên phải icon
+            logoutButton.setIconTextGap(5); // Khoảng cách giữa icon và text
+        }
+        logoutButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        logoutButton.setForeground(Color.WHITE);
+        logoutButton.setBackground(new Color(33, 150, 243)); // Cùng màu nền header
+        logoutButton.setBorder(BorderFactory.createLineBorder(Color.WHITE, 1)); // Viền trắng
+        logoutButton.setFocusPainted(false); // Bỏ viền focus mặc định
+        logoutButton.setPreferredSize(new Dimension(120, 30));
+        logoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Con trỏ tay khi hover
+        // Hiệu ứng hover
+        logoutButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                logoutButton.setBackground(Color.WHITE); // Đổi nền khi hover
+                logoutButton.setForeground(new Color(33, 150, 243)); // Đổi màu chữ
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                logoutButton.setBackground(new Color(33, 150, 243)); // Trở lại màu ban đầu
+                logoutButton.setForeground(Color.WHITE);
+            }
+        });
+        // Xử lý sự kiện đăng xuất
+        logoutButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                mainActivityView.this,
+                "Bạn có chắc chắn muốn đăng xuất?",
+                "Xác nhận đăng xuất",
+                JOptionPane.YES_NO_OPTION
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                System.out.println("=== ĐĂNG XUẤT ===");
+                dispose(); // Đóng frame hiện tại
+            }
+        });
+        // Đặt nút vào góc phải
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setOpaque(false); // Trong suốt để hòa hợp với header
+        buttonPanel.add(logoutButton);
+        header.add(buttonPanel, BorderLayout.EAST);
+
         add(header, BorderLayout.NORTH);
 
         // Footer
