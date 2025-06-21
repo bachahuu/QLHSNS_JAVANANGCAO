@@ -161,7 +161,18 @@ public class mainActivityView extends JFrame {
         System.out.println("=== XỬ LÝ TAB TRANG CHỦ ===");
     }
     private void handleAccountTab() {
-        System.out.println("=== XỬ LÝ TAB QUẢN LÝ TÀI KHOẢN ===");
+        System.out.println("=== XỬ LÝ TAB TÀI KHOẢN ===");
+        String key = "👤 Quản Lý Tài Khoản".trim();
+        TaiKhoanView tKView = new TaiKhoanView();
+        contentPanels.put(key, tKView); // Cập nhật panel cho tab này
+        mainContentPanel.removeAll(); // Xóa các panel cũ
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
+        }
+        cardLayout.show(mainContentPanel, key); // Hiển thị panel mới
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
     }
 
     private void handleEmployeeProfileTab() {
@@ -250,7 +261,18 @@ public class mainActivityView extends JFrame {
 
     }
     private void handlereportTab(){
-        System.out.println("=== XỬ LÝ TAB Báo Cáo & Thống Kê ===");
+        System.out.println("=== XỬ LÝ TAB BÁO CÁO ===");
+        String key = "📊 Báo Cáo & Thống Kê".trim();
+        BaoCaoView baoCaoView = new BaoCaoView();
+        contentPanels.put(key, baoCaoView); // Cập nhật panel cho tab này
+        mainContentPanel.removeAll(); // Xóa các panel cũ
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
+        }
+        cardLayout.show(mainContentPanel, key); // Hiển thị panel mới
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
     }
 
     private JPanel createPanel(String labelText) {
@@ -308,9 +330,9 @@ public class mainActivityView extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new mainActivityView().setVisible(true);
-        });
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            new mainActivityView().setVisible(true);
+//        });
+//    }
 }

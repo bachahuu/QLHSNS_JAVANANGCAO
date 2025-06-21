@@ -5,10 +5,12 @@
 package controller;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import model.Connect;
@@ -305,5 +307,58 @@ public class nhanSuController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+    }
+    
+    public List<NhanSuModel> getNhanVienMoi6Thang() {
+        List<NhanSuModel> list = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+                // Tính ngày cách hiện tại 6 tháng
+                LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
+                Date sqlDate = Date.valueOf(sixMonthsAgo);
+
+                String query = "SELECT * FROM nhan_vien WHERE ngay_vao_lam >= ?";
+                pstmt = conn.prepareStatement(query);
+                pstmt.setDate(1, sqlDate);
+                rs = pstmt.executeQuery();
+
+                while (rs.next()) {
+                    NhanSuModel nhanSu = new NhanSuModel();
+                    nhanSu.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+                    nhanSu.setMaSo(rs.getString("ma_so"));
+                    nhanSu.setHoTen(rs.getString("ho_ten"));
+                    nhanSu.setNgaySinh(rs.getDate("ngay_sinh"));
+                    nhanSu.setGioiTinh(rs.getString("gioi_tinh"));
+                    nhanSu.setDiaChi(rs.getString("dia_chi"));
+                    nhanSu.setSoDienThoai(rs.getString("so_dien_thoai"));
+                    nhanSu.setEmail(rs.getString("email"));
+                    nhanSu.setTrinhDoHocVan(rs.getString("trinh_do_hoc_van"));
+                    nhanSu.setMaPhongBan(rs.getInt("ma_phong_ban"));
+                    nhanSu.setMaChucVu(rs.getInt("ma_chuc_vu"));
+                    nhanSu.setNgayVaoLam(rs.getDate("ngay_vao_lam"));
+                    nhanSu.setTinhTrang(rs.getString("tinh_trang"));
+                    list.add(nhanSu);
+                }
+            } else {
+                System.out.println("Kết nối cơ sở dữ liệu thất bại");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
     }
 }
