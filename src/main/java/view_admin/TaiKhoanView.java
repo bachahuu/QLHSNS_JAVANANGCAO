@@ -32,7 +32,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,17 +79,6 @@ import org.jdatepicker.impl.UtilDateModel;
  *
  * @author Admin
  */
-//import javax.swing.*;
-//import javax.swing.table.*;
-//import java.awt.*;
-//import java.awt.event.*;
-//import java.io.*;
-//import java.text.SimpleDateFormat;
-//import java.util.*;
-//import org.apache.poi.ss.usermodel.*;
-//import org.apache.poi.xssf.usermodel.*;
-//import org.apache.poi.ss.util.*;
-
 public class TaiKhoanView extends JPanel {
     private JTextField searchField;
     private JComboBox<String> roleFilter;
@@ -164,8 +152,8 @@ public class TaiKhoanView extends JPanel {
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         filterPanel.setBackground(Color.WHITE);
 
-        roleFilter = new JComboBox<>(new String[]{"Tất cả vai trò", "Quan_tri", "Nhan_vien"});
-        statusFilter = new JComboBox<>(new String[]{"Tất cả trạng thái", "Hoat_dong", "Bi_khoa"});
+        roleFilter = new JComboBox<>(new String[]{"Tất cả vai trò", "Quản trị", "Nhân viên"});
+        statusFilter = new JComboBox<>(new String[]{"Tất cả trạng thái", "Hoạt động", "Bị khóa"});
         filterPanel.add(roleFilter);
         filterPanel.add(statusFilter);
 
@@ -173,22 +161,6 @@ public class TaiKhoanView extends JPanel {
         addButton.setBackground(new Color(103, 65, 217));
         addButton.setForeground(Color.WHITE);
         filterPanel.add(addButton);
-
-        JButton exportExcelButton = new JButton("Xuất Excel");
-        exportExcelButton.setBackground(new Color(46, 204, 113));
-        exportExcelButton.setForeground(Color.WHITE);
-        URL excelUrl = getClass().getResource("/images/export.png");
-        ImageIcon excelIcon = (excelUrl != null) ? resizeIcon(new ImageIcon(excelUrl), 20, 20) : new ImageIcon();
-        exportExcelButton.setIcon(excelIcon);
-        exportExcelButton.addActionListener(e -> {
-            exportExcelButton.setEnabled(false);
-            try {
-                exportToExcel();
-            } finally {
-                exportExcelButton.setEnabled(true);
-            }
-        });
-        filterPanel.add(exportExcelButton);
 
         topPanel.add(filterPanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
@@ -211,13 +183,13 @@ public class TaiKhoanView extends JPanel {
         roleFilter.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selectedRole = roleFilter.getSelectedItem().toString();
-                filterTaiKhoanByRole(selectedRole);
+                filterTaiKhoanByRole(mapRoleToDbValue(selectedRole));
             }
         });
         statusFilter.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selectedStatus = statusFilter.getSelectedItem().toString();
-                filterTaiKhoanByStatus(selectedStatus);
+                filterTaiKhoanByStatus(mapStatusToDbValue(selectedStatus));
             }
         });
 
@@ -240,17 +212,7 @@ public class TaiKhoanView extends JPanel {
     private void loadDataFromDatabase() {
         taiKhoanController = new TaiKhoanController();
         List<TaiKhoanModel> taiKhoanList = taiKhoanController.getAll();
-        for (TaiKhoanModel taiKhoan : taiKhoanList) {
-            Object[] row = {
-                taiKhoan.getMaTaiKhoan(),
-                taiKhoan.getTenNhanVien(),
-                taiKhoan.getTenDangNhap(),
-                taiKhoan.getVaiTro(),
-                taiKhoan.getTrangThai(),
-                null
-            };
-            tableModel.addRow(row);
-        }
+        updateTableData(taiKhoanList);
     }
 
     private void refreshTableData() {
@@ -259,20 +221,20 @@ public class TaiKhoanView extends JPanel {
     }
     
     private void searchTaiKhoan(String searchText) {
-    taiKhoanController = new TaiKhoanController();
-    List<TaiKhoanModel> filteredList = taiKhoanController.searchByTenDangNhapOrTenNhanVien(searchText != null ? searchText.trim() : "");
-    updateTableData(filteredList);
-}
+        taiKhoanController = new TaiKhoanController();
+        List<TaiKhoanModel> filteredList = taiKhoanController.searchByTenDangNhapOrTenNhanVien(searchText != null ? searchText.trim() : "");
+        updateTableData(filteredList);
+    }
 
     private void filterTaiKhoanByRole(String selectedRole) {
         taiKhoanController = new TaiKhoanController();
-        List<TaiKhoanModel> filteredList = taiKhoanController.getByVaiTro("Tất cả vai trò".equals(selectedRole) ? null : selectedRole);
+        List<TaiKhoanModel> filteredList = taiKhoanController.getByVaiTro("Tất cả vai trò".equals(mapRoleToDisplay(selectedRole)) ? null : selectedRole);
         updateTableData(filteredList);
     }
 
     private void filterTaiKhoanByStatus(String selectedStatus) {
         taiKhoanController = new TaiKhoanController();
-        List<TaiKhoanModel> filteredList = taiKhoanController.getByTrangThai("Tất cả trạng thái".equals(selectedStatus) ? null : selectedStatus);
+        List<TaiKhoanModel> filteredList = taiKhoanController.getByTrangThai("Tất cả trạng thái".equals(mapStatusToDisplay(selectedStatus)) ? null : selectedStatus);
         updateTableData(filteredList);
     }
 
@@ -284,8 +246,8 @@ public class TaiKhoanView extends JPanel {
                 taiKhoan.getMaTaiKhoan(),
                 taiKhoan.getTenNhanVien(),
                 taiKhoan.getTenDangNhap(),
-                taiKhoan.getVaiTro(),
-                taiKhoan.getTrangThai(),
+                mapRoleToDisplay(taiKhoan.getVaiTro()), // Hiển thị "Quản trị" hoặc "Nhân viên"
+                mapStatusToDisplay(taiKhoan.getTrangThai()), // Hiển thị "Hoạt động" hoặc "Bị khóa"
                 createButtonPanel(false, null, null, null) // Giữ cột nút hành động nếu cần
             };
             tableModel.addRow(row);
@@ -390,7 +352,7 @@ public class TaiKhoanView extends JPanel {
         JLabel vaiTroLabel = new JLabel("Vai trò:");
         vaiTroLabel.setFont(labelFont);
         mainPanel.add(vaiTroLabel);
-        String[] vaiTroOptions = {"Quan_tri", "Nhan_vien"};
+        String[] vaiTroOptions = {"Quản trị", "Nhân viên"};
         JComboBox<String> vaiTroComboBox = new JComboBox<>(vaiTroOptions);
         vaiTroComboBox.setFont(fieldFont);
         mainPanel.add(vaiTroComboBox);
@@ -398,10 +360,10 @@ public class TaiKhoanView extends JPanel {
         JLabel trangThaiLabel = new JLabel("Trạng thái:");
         trangThaiLabel.setFont(labelFont);
         mainPanel.add(trangThaiLabel);
-        String[] trangThaiOptions = {"Hoat_dong", "Bi_khoa"};
+        String[] trangThaiOptions = {"Hoạt động", "Bị khóa"};
         JComboBox<String> trangThaiComboBox = new JComboBox<>(trangThaiOptions);
         trangThaiComboBox.setFont(fieldFont);
-        trangThaiComboBox.setSelectedItem("Hoat_dong");
+        trangThaiComboBox.setSelectedItem("Hoạt động");
         mainPanel.add(trangThaiComboBox);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -417,8 +379,8 @@ public class TaiKhoanView extends JPanel {
                 newTaiKhoan.setTenDangNhap(tenDangNhapField.getText().trim());
                 String plainPassword = new String(matKhauField.getPassword()).trim();
                 newTaiKhoan.setMatKhau(plainPassword); // Chưa mã hóa tại đây
-                newTaiKhoan.setVaiTro((String) vaiTroComboBox.getSelectedItem());
-                newTaiKhoan.setTrangThai((String) trangThaiComboBox.getSelectedItem());
+                newTaiKhoan.setVaiTro(mapRoleToDbValue((String) vaiTroComboBox.getSelectedItem()));
+                newTaiKhoan.setTrangThai(mapStatusToDbValue((String) trangThaiComboBox.getSelectedItem()));
 
                 if (newTaiKhoan.getTenDangNhap().isEmpty() || newTaiKhoan.getMatKhau().isEmpty()) {
                     JOptionPane.showMessageDialog(dialog, "Tên đăng nhập và mật khẩu không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -452,102 +414,6 @@ public class TaiKhoanView extends JPanel {
         dialog.add(mainPanel, BorderLayout.CENTER);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
-    }
-
-    private void exportToExcel() {
-        try {
-            XSSFWorkbook workbook = new XSSFWorkbook();
-            XSSFSheet sheet = workbook.createSheet("DanhSachTaiKhoan");
-            XSSFRow row = null;
-            Cell cell = null;
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-            String currentDate = dateFormat.format(new Date());
-
-            CellStyle centerStyle = workbook.createCellStyle();
-            centerStyle.setAlignment(HorizontalAlignment.CENTER);
-
-            row = sheet.createRow(0);
-            cell = row.createCell(0, CellType.STRING);
-            cell.setCellValue("DANH SÁCH TÀI KHOẢN");
-            cell.setCellStyle(centerStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
-
-            row = sheet.createRow(1);
-            cell = row.createCell(0, CellType.STRING);
-            cell.setCellValue("Thời gian xuất: " + currentDate);
-            cell.setCellStyle(centerStyle);
-            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
-
-            row = sheet.createRow(3);
-            String[] headers = {"STT", "Mã TK", "Mã NV", "Tên đăng nhập", "Vai trò", "Trạng thái"};
-            for (int i = 0; i < headers.length; i++) {
-                cell = row.createCell(i, CellType.STRING);
-                cell.setCellValue(headers[i]);
-            }
-
-            taiKhoanController = new TaiKhoanController();
-            List<TaiKhoanModel> taiKhoanList = taiKhoanController.getAll();
-            for (int i = 0; i < taiKhoanList.size(); i++) {
-                TaiKhoanModel taiKhoan = taiKhoanList.get(i);
-                row = sheet.createRow(4 + i);
-
-                cell = row.createCell(0, CellType.NUMERIC);
-                cell.setCellValue(i + 1);
-
-                cell = row.createCell(1, CellType.NUMERIC);
-                cell.setCellValue(taiKhoan.getMaTaiKhoan());
-
-                cell = row.createCell(2, CellType.NUMERIC);
-                cell.setCellValue(taiKhoan.getMaNhanVien());
-
-                cell = row.createCell(3, CellType.STRING);
-                cell.setCellValue(taiKhoan.getTenDangNhap());
-
-                cell = row.createCell(4, CellType.STRING);
-                cell.setCellValue(taiKhoan.getVaiTro());
-
-                cell = row.createCell(5, CellType.STRING);
-                cell.setCellValue(taiKhoan.getTrangThai());
-            }
-
-            for (int i = 0; i < headers.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setSelectedFile(new File("DanhSachTaiKhoan.xlsx"));
-            fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return f.isDirectory() || f.getName().toLowerCase().endsWith(".xlsx");
-                }
-
-                @Override
-                public String getDescription() {
-                    return "Excel Files (*.xlsx)";
-                }
-            });
-
-            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File file = fileChooser.getSelectedFile();
-                if (!file.getName().toLowerCase().endsWith(".xlsx")) {
-                    file = new File(file.getAbsolutePath() + ".xlsx");
-                }
-                try (FileOutputStream fos = new FileOutputStream(file)) {
-                    workbook.write(fos);
-                    JOptionPane.showMessageDialog(this, "Xuất Excel thành công tại " + file.getAbsolutePath(), "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Lỗi khi lưu file Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-
-            workbook.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
     }
 
     class ButtonRenderer implements TableCellRenderer {
@@ -644,10 +510,10 @@ public class TaiKhoanView extends JPanel {
         private void showDetailDialog(int row) {
             int maTaiKhoan = (Integer) tableModel.getValueAt(row, 0);
             taiKhoanController = new TaiKhoanController();
-//            selectedTaiKhoan = taiKhoanController.getById(maTaiKhoan);
+            selectedTaiKhoan = taiKhoanController.getById(maTaiKhoan);
 
             if (selectedTaiKhoan == null) {
-                JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin tài khoản!");
+                JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin tài khoản!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -686,7 +552,7 @@ public class TaiKhoanView extends JPanel {
             JLabel vaiTroLabel = new JLabel("Vai trò:");
             vaiTroLabel.setFont(labelFont);
             dialog.add(vaiTroLabel);
-            JTextField vaiTroField = new JTextField(selectedTaiKhoan.getVaiTro());
+            JTextField vaiTroField = new JTextField(mapRoleToDisplay(selectedTaiKhoan.getVaiTro()));
             vaiTroField.setFont(fieldFont);
             vaiTroField.setEditable(false);
             dialog.add(vaiTroField);
@@ -694,7 +560,7 @@ public class TaiKhoanView extends JPanel {
             JLabel trangThaiLabel = new JLabel("Trạng thái:");
             trangThaiLabel.setFont(labelFont);
             dialog.add(trangThaiLabel);
-            JTextField trangThaiField = new JTextField(selectedTaiKhoan.getTrangThai());
+            JTextField trangThaiField = new JTextField(mapStatusToDisplay(selectedTaiKhoan.getTrangThai()));
             trangThaiField.setFont(fieldFont);
             trangThaiField.setEditable(false);
             dialog.add(trangThaiField);
@@ -715,7 +581,7 @@ public class TaiKhoanView extends JPanel {
             selectedTaiKhoan = taiKhoanController.getById(maTaiKhoan);
 
             if (selectedTaiKhoan == null) {
-                JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin tài khoản!");
+                JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin tài khoản!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -777,19 +643,19 @@ public class TaiKhoanView extends JPanel {
             JLabel vaiTroLabel = new JLabel("Vai trò:");
             vaiTroLabel.setFont(labelFont);
             mainPanel.add(vaiTroLabel);
-            String[] vaiTroOptions = {"Quan_tri", "Nhan_vien"};
+            String[] vaiTroOptions = {"Quản trị", "Nhân viên"};
             JComboBox<String> vaiTroComboBox = new JComboBox<>(vaiTroOptions);
             vaiTroComboBox.setFont(fieldFont);
-            vaiTroComboBox.setSelectedItem(selectedTaiKhoan.getVaiTro());
+            vaiTroComboBox.setSelectedItem(mapRoleToDisplay(selectedTaiKhoan.getVaiTro()));
             mainPanel.add(vaiTroComboBox);
 
             JLabel trangThaiLabel = new JLabel("Trạng thái:");
             trangThaiLabel.setFont(labelFont);
             mainPanel.add(trangThaiLabel);
-            String[] trangThaiOptions = {"Hoat_dong", "Bi_khoa"};
+            String[] trangThaiOptions = {"Hoạt động", "Bị khóa"};
             JComboBox<String> trangThaiComboBox = new JComboBox<>(trangThaiOptions);
             trangThaiComboBox.setFont(fieldFont);
-            trangThaiComboBox.setSelectedItem(selectedTaiKhoan.getTrangThai());
+            trangThaiComboBox.setSelectedItem(mapStatusToDisplay(selectedTaiKhoan.getTrangThai()));
             mainPanel.add(trangThaiComboBox);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -804,8 +670,8 @@ public class TaiKhoanView extends JPanel {
                     selectedTaiKhoan.setTenDangNhap(tenDangNhapField.getText().trim());
                     String newPassword = new String(matKhauField.getPassword()).trim();
                     selectedTaiKhoan.setMatKhau(newPassword); // Truyền mật khẩu thô, mã hóa trong Controller
-                    selectedTaiKhoan.setVaiTro((String) vaiTroComboBox.getSelectedItem());
-                    selectedTaiKhoan.setTrangThai((String) trangThaiComboBox.getSelectedItem());
+                    selectedTaiKhoan.setVaiTro(mapRoleToDbValue((String) vaiTroComboBox.getSelectedItem()));
+                    selectedTaiKhoan.setTrangThai(mapStatusToDbValue((String) trangThaiComboBox.getSelectedItem()));
 
                     // Không kiểm tra rỗng cho mật khẩu vì có thể không đổi
                     taiKhoanController = new TaiKhoanController();
@@ -836,5 +702,33 @@ public class TaiKhoanView extends JPanel {
             dialog.add(buttonPanel, BorderLayout.SOUTH);
             dialog.setVisible(true);
         }
+    }
+
+    // Phương thức ánh xạ vai trò từ db sang hiển thị
+    private String mapRoleToDisplay(String dbRole) {
+        if ("Quan_tri".equalsIgnoreCase(dbRole)) return "Quản trị";
+        if ("Nhan_vien".equalsIgnoreCase(dbRole)) return "Nhân viên";
+        return dbRole;
+    }
+
+    // Phương thức ánh xạ trạng thái từ db sang hiển thị
+    private String mapStatusToDisplay(String dbStatus) {
+        if ("Hoat_dong".equalsIgnoreCase(dbStatus)) return "Hoạt động";
+        if ("Bi_khoa".equalsIgnoreCase(dbStatus)) return "Bị khóa";
+        return dbStatus;
+    }
+
+    // Phương thức ánh xạ vai trò từ hiển thị sang db
+    private String mapRoleToDbValue(String displayRole) {
+        if ("Quản trị".equalsIgnoreCase(displayRole)) return "Quan_tri";
+        if ("Nhân viên".equalsIgnoreCase(displayRole)) return "Nhan_vien";
+        return null;
+    }
+
+    // Phương thức ánh xạ trạng thái từ hiển thị sang db
+    private String mapStatusToDbValue(String displayStatus) {
+        if ("Hoạt động".equalsIgnoreCase(displayStatus)) return "Hoat_dong";
+        if ("Bị khóa".equalsIgnoreCase(displayStatus)) return "Bi_khoa";
+        return null;
     }
 }
