@@ -22,7 +22,7 @@ public class Connect {
          host = "localhost";
          user = "root";
          pass ="";
-         url ="jdbc:mysql://localhost:3306/qlhsnsjavanangcao";
+         url ="jdbc:mysql://localhost:3306/qlhsns";
     }
     public Connection getConnection() throws SQLException{
           try {

@@ -61,6 +61,109 @@ public class nhanSuController {
         }
          return list;
     }
+     
+    public NhanSuModel getById(int maNhanVien) {
+        NhanSuModel nhanSu = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+                String query = "SELECT * FROM nhan_vien WHERE ma_nhan_vien = ?";
+                pstmt = conn.prepareStatement(query);
+                pstmt.setInt(1, maNhanVien);
+                rs = pstmt.executeQuery();
+
+                if (rs.next()) {
+                    nhanSu = new NhanSuModel();
+                    nhanSu.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+                    nhanSu.setMaSo(rs.getString("ma_so"));
+                    nhanSu.setHoTen(rs.getString("ho_ten"));
+                    nhanSu.setNgaySinh(rs.getDate("ngay_sinh"));
+                    nhanSu.setGioiTinh(rs.getString("gioi_tinh"));
+                    nhanSu.setDiaChi(rs.getString("dia_chi"));
+                    nhanSu.setSoDienThoai(rs.getString("so_dien_thoai"));
+                    nhanSu.setEmail(rs.getString("email"));
+                    nhanSu.setTrinhDoHocVan(rs.getString("trinh_do_hoc_van"));
+                    nhanSu.setMaPhongBan(rs.getInt("ma_phong_ban"));
+                    nhanSu.setMaChucVu(rs.getInt("ma_chuc_vu"));
+                    nhanSu.setNgayVaoLam(rs.getDate("ngay_vao_lam"));
+                    nhanSu.setTinhTrang(rs.getString("tinh_trang"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return nhanSu;
+    }
+    
+    public ContractModel getHopDongByNhanVien(int maNhanVien) {
+        ContractModel contract = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+                String query = "SELECT * FROM hop_dong WHERE ma_nhan_vien = ?";
+                pstmt = conn.prepareStatement(query);
+                pstmt.setInt(1, maNhanVien);
+                rs = pstmt.executeQuery();
+
+                if (rs.next()) {
+                    contract = new ContractModel();
+                    contract.setMaHopDong(rs.getInt("ma_hop_dong"));
+                    contract.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+
+                    // Enum LoaiHopDong
+                    String loai = rs.getString("loai_hop_dong");
+                    if (loai != null) {
+                        contract.setLoaiHopDong(ContractModel.LoaiHopDong.valueOf(loai));
+                    }
+
+                    contract.setNgayBatDau(rs.getDate("ngay_bat_dau"));
+                    contract.setNgayKetThuc(rs.getDate("ngay_ket_thuc"));
+                    contract.setNgayKy(rs.getDate("ngay_ky"));
+
+                    // Enum TrangThaiHopDong
+                    String trangThai = rs.getString("trang_thai");
+                    if (trangThai != null) {
+                        contract.setTrangThai(ContractModel.TrangThaiHopDong.valueOf(trangThai));
+                    }
+
+                    contract.setLuongCoBan(rs.getBigDecimal("luong_co_ban"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return contract;
+    }
+
+
      // tìm theo họ và tên
     public List<NhanSuModel> searchByHoTen(String hoTen) {
         List<NhanSuModel> list = new ArrayList<>();

@@ -7,7 +7,10 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import model.Connect;
 
 public class LuongController {
     private LuongView view;
@@ -18,6 +21,86 @@ public class LuongController {
         this.conn = conn;
         initController();
         loadData();
+    }
+
+    public LuongController() {
+    }
+    
+   // Lấy tất cả lương của một nhân viên
+    public List<LuongModel> getAllByNhanVien(int maNhanVien) {
+        List<LuongModel> list = new ArrayList<>();
+        Connection localConn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            localConn = mc.getConnection(); // Tạo Connection
+            if (localConn == null) {
+                System.out.println("Kết nối cơ sở dữ liệu thất bại");
+                return list;
+            }
+            String query = "SELECT * FROM luong WHERE ma_nhan_vien = ?";
+            pstmt = localConn.prepareStatement(query);
+            pstmt.setInt(1, maNhanVien);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                LuongModel luong = new LuongModel();
+                luong.setMaLuong(rs.getInt("ma_luong"));
+                luong.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+                luong.setNgayTinhLuong(rs.getDate("ngay_tinh_luong"));
+                luong.setSoNgayCong(rs.getInt("so_ngay_cong"));
+                luong.setSoGioTangCa(rs.getInt("so_gio_tang_ca"));
+                luong.setTienThuong(rs.getBigDecimal("tien_thuong"));
+                luong.setTongPhuCap(rs.getBigDecimal("tong_phu_cap"));
+                luong.setTongKhauTru(rs.getBigDecimal("tong_khau_tru"));
+                luong.setLuongThucNhan(rs.getBigDecimal("luong_thuc_nhan"));
+                list.add(luong);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (localConn != null) localConn.close(); // Đóng Connection
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+    // Lấy lương cơ bản của nhân viên đang còn hiệu lực
+    public BigDecimal getLuongCoBanByNhanVien(int maNhanVien) {
+        BigDecimal luongCoBan = BigDecimal.ZERO;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            String sql = "SELECT luong_co_ban FROM hop_dong WHERE ma_nhan_vien = ? ";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, maNhanVien);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                luongCoBan = rs.getBigDecimal("luong_co_ban");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return luongCoBan;
     }
 
     private void initController() {
