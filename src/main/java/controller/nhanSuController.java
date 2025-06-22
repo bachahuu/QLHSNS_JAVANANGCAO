@@ -361,4 +361,57 @@ public class nhanSuController {
         }
         return list;
     }
+    
+    public List<NhanSuModel> getAllBaoCao() {
+        List<NhanSuModel> list = new ArrayList<>();
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+            if (conn != null) {
+                System.out.println("Kết nối cơ sở dữ liệu thành công");
+                stmt = conn.createStatement();
+                // Thực hiện join với bảng phong_ban để lấy tên phòng ban
+                String query = "SELECT nv.*, pb.ten_phong_ban " +
+                               "FROM nhan_vien nv " +
+                               "LEFT JOIN phong_ban pb ON nv.ma_phong_ban = pb.ma_phong_ban";
+                rs = stmt.executeQuery(query);
+
+                while (rs.next()) {
+                    NhanSuModel nhanSu = new NhanSuModel();
+                    nhanSu.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+                    nhanSu.setMaSo(rs.getString("ma_so"));
+                    nhanSu.setHoTen(rs.getString("ho_ten"));
+                    nhanSu.setNgaySinh(rs.getDate("ngay_sinh"));
+                    nhanSu.setGioiTinh(rs.getString("gioi_tinh"));
+                    nhanSu.setDiaChi(rs.getString("dia_chi"));
+                    nhanSu.setSoDienThoai(rs.getString("so_dien_thoai"));
+                    nhanSu.setEmail(rs.getString("email"));
+                    nhanSu.setTrinhDoHocVan(rs.getString("trinh_do_hoc_van"));
+                    nhanSu.setMaPhongBan(rs.getInt("ma_phong_ban"));
+                    nhanSu.setMaChucVu(rs.getInt("ma_chuc_vu"));
+                    nhanSu.setNgayVaoLam(rs.getDate("ngay_vao_lam"));
+                    nhanSu.setTinhTrang(rs.getString("tinh_trang"));
+                    nhanSu.setTenPhongBan(rs.getString("ten_phong_ban")); // Điền tên phòng ban
+                    list.add(nhanSu);
+                }
+            } else {
+                System.out.println("Kết nối cơ sở dữ liệu thất bại");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
 }

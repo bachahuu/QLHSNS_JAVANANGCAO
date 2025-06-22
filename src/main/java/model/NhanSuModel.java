@@ -11,7 +11,7 @@ import java.util.Date;
  * @author Windows
  */
 public class NhanSuModel {
-    private int maNhanVien; 
+    private int maNhanVien;
     private String maSo; 
     private String hoTen; 
     private Date ngaySinh; 
@@ -20,7 +20,8 @@ public class NhanSuModel {
     private String soDienThoai; 
     private String email; 
     private String trinhDoHocVan; 
-    private int maPhongBan; 
+    private int maPhongBan;
+    private String tenPhongBan;//Sử dụng cho BaoCaoView
     private int maChucVu; 
     private Date ngayVaoLam; 
     private String tinhTrang; 
@@ -146,6 +147,14 @@ public class NhanSuModel {
 
     public void setTinhTrang(String tinhTrang) {
         this.tinhTrang = tinhTrang;
+    }
+
+    public String getTenPhongBan() {
+        return tenPhongBan;
+    }
+
+    public void setTenPhongBan(String tenPhongBan) {
+        this.tenPhongBan = tenPhongBan;
     }
 
     // Phương thức toString để hiển thị thông tin nhân viên

@@ -6,6 +6,7 @@ import java.util.Date;
 public class LuongModel {
     private int maLuong;
     private int maNhanVien;
+    private String hoTen; //Sử dụng cho file BaoCaoView.java
     private Date ngayTinhLuong;
     private int soNgayCong;
     private int soGioTangCa;
@@ -40,4 +41,14 @@ public class LuongModel {
 
     public BigDecimal getLuongThucNhan() { return luongThucNhan; }
     public void setLuongThucNhan(BigDecimal luongThucNhan) { this.luongThucNhan = luongThucNhan; }
+
+    public String getHoTen() {
+        return hoTen;
+    }
+
+    public void setHoTen(String hoTen) {
+        this.hoTen = hoTen;
+    }
+    
+    
 }
