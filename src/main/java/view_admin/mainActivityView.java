@@ -4,6 +4,7 @@
  */
 package view_admin;
 
+import controller.HopDongController;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -15,6 +16,7 @@ import model.Connect;
 import view_admin.LuongView;
 import java.sql.Connection;
 import view.ChucVuView;
+import view_admin.HopDongView;
 
 /**
  * @author Windows
@@ -203,7 +205,7 @@ public class mainActivityView extends JFrame {
                 handleSalaryTab();
                 break;
             case "📝 Hợp Đồng":
-                handleContractTab();
+                handleHopDongTab();
                 break;
             case "🕒 Nghỉ Phép & Nghỉ Việc":
                 handleLeaveTab();
@@ -310,10 +312,26 @@ public class mainActivityView extends JFrame {
     }
     
 
-    private void handleContractTab() {
-        System.out.println("=== XỬ LÝ TAB HỢP ĐỒNG ===");
-
+    private void handleHopDongTab() {
+//        System.out.println("=== XỬ LÝ TAB HỢP ĐỒNG ===");
+//        String key = "📝 Hợp Đồng".trim();
+//
+//        if (!contentPanels.containsKey(key)) {
+//            try {
+//                HopDongView hopDongPanel = new HopDongView();
+//                contentPanels.put(key, hopDongPanel);
+//                mainContentPanel.add(hopDongPanel, key); 
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//                JOptionPane.showMessageDialog(this, "Lỗi tải giao diện hợp đồng: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//        }
+//        cardLayout.show(mainContentPanel, key);
+//        mainContentPanel.revalidate();
+//        mainContentPanel.repaint();
     }
+
 
     private void handleLeaveTab() {
         System.out.println("=== XỬ LÝ TAB NGHỈ PHÉP & NGHỈ VIỆC ===");
@@ -389,9 +407,9 @@ public class mainActivityView extends JFrame {
         }
     }
 
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> {
-//            new mainActivityView().setVisible(true);
-//        });
-//    }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new mainActivityView().setVisible(true);
+        });
+    }
 }
