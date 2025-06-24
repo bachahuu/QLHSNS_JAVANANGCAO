@@ -160,7 +160,15 @@ public class DangNhapView extends JFrame {
                         if (MessageDigest.isEqual(storedHash, inputHashedBytes)) {
 //                            JOptionPane.showMessageDialog(DangNhapView.this, "Đăng nhập thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                             dispose(); // Đóng form đăng nhập
-                            new mainActivityView().setVisible(true); // Chuyển sang MainActivityView
+                            // Lấy vai trò từ object taiKhoan đã được query từ DB
+                            String vaiTro = taiKhoan.getVaiTro();
+                            if ("Quan_tri".equals(vaiTro)) {
+                                new mainActivityView().setVisible(true);
+                            } else if ("Nhan_vien".equals(vaiTro)) {
+                                new view_nhanvien.NhanvienView(taiKhoan.getMaNhanVien()).setVisible(true);
+                            } else {
+                                JOptionPane.showMessageDialog(DangNhapView.this, "Vai trò không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            }
                         } else {
                             JOptionPane.showMessageDialog(DangNhapView.this, "Mật khẩu không đúng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                         }

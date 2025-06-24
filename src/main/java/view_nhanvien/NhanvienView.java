@@ -4,6 +4,7 @@
  */
 package view_nhanvien;
 
+import controller.nhanSuController;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -16,7 +17,12 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -31,6 +37,9 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import model.ContractModel;
+import model.NhanSuModel;
+import view_admin.DangNhapView;
 /**
  * @author Windows
  */
@@ -39,7 +48,9 @@ public class NhanvienView extends JFrame {
     private JPanel mainContentPanel;
     private JList<String> menuList;
     private DefaultListModel<String> menuModel;
-
+    private int maNhanVien;
+    private NhanSuModel nhanVien;
+    private ContractModel hopDong;
     private final String[] menuItems = {
         "🏠 Trang Chủ",
         "👤 Thông Tin Cá Nhân",
@@ -48,13 +59,18 @@ public class NhanvienView extends JFrame {
 
     private final HashMap<String, JPanel> contentPanels = new HashMap<>();
 
-    public NhanvienView() {
+    public NhanvienView(int maNhanVien) {
+        this.maNhanVien = maNhanVien;
+        nhanSuController controller = new nhanSuController();
+        this.nhanVien = controller.getById(maNhanVien);
+        this.hopDong = controller.getHopDongByNhanVien(maNhanVien);
         setTitle("Hệ Thống Quản Lý Hồ Sơ Nhân Sự");
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-
+        
+        
         // Header
         JPanel header = new JPanel();
         header.setBackground(new Color(33, 150, 243));
@@ -113,7 +129,8 @@ public class NhanvienView extends JFrame {
             );
             if (confirm == JOptionPane.YES_OPTION) {
                 System.out.println("=== ĐĂNG XUẤT ===");
-                dispose(); // Đóng frame hiện tại
+                new DangNhapView().setVisible(true);
+                dispose();
             }
         });
         // Đặt nút vào góc phải
@@ -148,7 +165,9 @@ public class NhanvienView extends JFrame {
         menuList.setCellRenderer(new MenuRenderer());
 
         JPanel menuPanel = new JPanel(new BorderLayout());
-        JLabel menuTitle = new JLabel("Nhân Sự:");
+        // Hiển thị "Nhân Sự: Tên Nhân Sự"
+        String tenNhanSu = (nhanVien != null && nhanVien.getHoTen() != null) ? nhanVien.getHoTen() : "Không xác định";
+        JLabel menuTitle = new JLabel("Nhân Sự: " + tenNhanSu);
         menuTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         menuTitle.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         menuPanel.add(menuTitle, BorderLayout.NORTH);
@@ -190,7 +209,7 @@ public class NhanvienView extends JFrame {
     }
 
     // Phương thức xử lý sự kiện cho từng tab
-    private void handleTabSelection(String selectedTab) {
+    private void handleTabSelection(String selectedTab)  {
         System.out.println("Đã chuyển đến tab: " + selectedTab);
         
         switch (selectedTab.trim()) {
@@ -215,7 +234,8 @@ public class NhanvienView extends JFrame {
     private void handleAccountTab() {
         System.out.println("=== XỬ LÝ TAB Thông Tin Cá Nhân ===");
         String key = "👤 Thông Tin Cá Nhân".trim();
-        ProfileView employeeProfilePanel = new ProfileView();
+
+        ProfileView employeeProfilePanel = new ProfileView(nhanVien, hopDong);
         contentPanels.put(key, employeeProfilePanel); // Cập nhật panel cho tab này
         mainContentPanel.removeAll(); // Xóa các panel cũ
         for (String item : menuItems) {
@@ -228,20 +248,19 @@ public class NhanvienView extends JFrame {
     }
 
 
-    private void handleSalaryTab() {
+    private void handleSalaryTab()  {
         System.out.println("=== XỬ LÝ TAB LƯƠNG ===");
-//        String key = "👤 Hồ Sơ Nhân Sự".trim();
-//        EmployeeProfileView employeeProfilePanel = new EmployeeProfileView();
-//        contentPanels.put(key, employeeProfilePanel); // Cập nhật panel cho tab này
-//        mainContentPanel.removeAll(); // Xóa các panel cũ
-//        for (String item : menuItems) {
-//            String panelKey = item.trim();
-//            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
-//        }
-//        cardLayout.show(mainContentPanel, key); // Hiển thị panel mới
-//        mainContentPanel.revalidate();
-//        mainContentPanel.repaint();
-
+        String key = "💰 Lương & Phụ Cấp".trim();
+        ProfileLuongView luong = new ProfileLuongView(maNhanVien);
+        contentPanels.put(key, luong);
+        mainContentPanel.removeAll();
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
+        }
+        cardLayout.show(mainContentPanel, key);
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
     }
 
     private JPanel createPanel(String labelText) {
@@ -278,6 +297,7 @@ public class NhanvienView extends JFrame {
             return label;
         }
     }
+
     
     // Phương thức công khai để lấy panel hiện tại (nếu cần)
     public JPanel getCurrentPanel() {
@@ -301,7 +321,8 @@ public class NhanvienView extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new NhanvienView().setVisible(true);
+            int maNhanVien = 1;
+            new NhanvienView(maNhanVien).setVisible(true);
         });
     }
 }

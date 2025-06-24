@@ -106,7 +106,8 @@ public class mainActivityView extends JFrame {
             );
             if (confirm == JOptionPane.YES_OPTION) {
                 System.out.println("=== ĐĂNG XUẤT ===");
-                dispose(); // Đóng frame hiện tại
+                new DangNhapView().setVisible(true);
+                dispose();
             }
         });
         // Đặt nút vào góc phải

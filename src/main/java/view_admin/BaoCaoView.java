@@ -13,8 +13,8 @@ package view_admin;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
+import controller.BaoCaoLuongController;
 import controller.nhanSuController;
-import controller.PhongBanController;
 import controller.TaiKhoanController;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -35,7 +35,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -53,7 +55,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import model.NhanSuModel;
-import model.PhongBanModel;
+import model.LuongModel;
 import model.TaiKhoanModel;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -64,24 +66,25 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-/**
- *
- * @author Admin
- */
 public class BaoCaoView extends JPanel {
     private JTabbedPane tabbedPane;
-    private JTextField searchTaiKhoanField, searchNhanSuField, searchPhongBanField;
-    private JComboBox<String> roleFilter, statusFilter, phongBanFilter;
+    private JTextField searchTaiKhoanField, searchNhanSuField, searchLuongField;
+    private JComboBox<String> roleFilter, statusFilter, monthFilter, yearFilter;
     private JComboBox<String> nhanSuFilter;
-    private JTable taiKhoanTable, nhanSuTable, phongBanTable;
-    private DefaultTableModel taiKhoanTableModel, nhanSuTableModel, phongBanTableModel;
+    private JTable taiKhoanTable, nhanSuTable, luongTable;
+    private DefaultTableModel taiKhoanTableModel, nhanSuTableModel, luongTableModel;
     private TaiKhoanController taiKhoanController;
     private nhanSuController nhanSuController;
-    private PhongBanController phongBanController;
+    private BaoCaoLuongController baoCaoLuongController;
 
     public BaoCaoView() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
+
+        // Khởi tạo controller với connection
+        this.taiKhoanController = new TaiKhoanController();
+        this.nhanSuController = new nhanSuController();
+        this.baoCaoLuongController = new BaoCaoLuongController();
 
         // Tạo JTabbedPane
         tabbedPane = new JTabbedPane();
@@ -95,9 +98,9 @@ public class BaoCaoView extends JPanel {
         JPanel nhanSuPanel = createNhanSuPanel();
         tabbedPane.addTab("Danh sách nhân viên", nhanSuPanel);
 
-        // Tab 3: Danh sách phòng ban
-        JPanel phongBanPanel = createPhongBanPanel();
-        tabbedPane.addTab("Danh sách phòng ban", phongBanPanel);
+        // Tab 3: Danh sách lương
+        JPanel luongPanel = createLuongPanel();
+        tabbedPane.addTab("Danh sách lương", luongPanel);
 
         add(tabbedPane, BorderLayout.CENTER);
     }
@@ -268,13 +271,8 @@ public class BaoCaoView extends JPanel {
         filterPanel.setBackground(Color.WHITE);
 
         nhanSuFilter = new JComboBox<>(new String[]{"Tất cả nhân viên", "Nhân viên mới (6 tháng)"});
-        phongBanFilter = new JComboBox<>();
-        phongBanFilter.addItem("Tất cả phòng ban");
-        loadPhongBanFilter(); // Load danh sách phòng ban
         filterPanel.add(new JLabel("Bộ lọc:"));
         filterPanel.add(nhanSuFilter);
-        filterPanel.add(new JLabel("Phòng ban:"));
-        filterPanel.add(phongBanFilter);
 
         JButton exportExcelButton = new JButton("Xuất Excel");
         exportExcelButton.setBackground(new Color(46, 204, 113));
@@ -286,7 +284,7 @@ public class BaoCaoView extends JPanel {
         panel.add(topPanel, BorderLayout.NORTH);
 
         // Table for employee data
-        String[] columnNames = {"STT", "Mã NV", "Họ tên", "Phòng ban", "Ngày vào làm", "Chức vụ"};
+        String[] columnNames = {"STT", "Mã NV", "Họ tên", "Phòng ban", "Ngày vào làm", "Tình trạng"};
         nhanSuTableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -303,15 +301,7 @@ public class BaoCaoView extends JPanel {
         nhanSuFilter.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selectedFilter = nhanSuFilter.getSelectedItem().toString();
-                String selectedPhongBan = phongBanFilter.getSelectedItem().toString();
-                filterNhanSu(selectedFilter, selectedPhongBan);
-            }
-        });
-        phongBanFilter.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                String selectedFilter = nhanSuFilter.getSelectedItem().toString();
-                String selectedPhongBan = phongBanFilter.getSelectedItem().toString();
-                filterNhanSu(selectedFilter, selectedPhongBan);
+                filterNhanSu(selectedFilter);
             }
         });
 
@@ -320,11 +310,11 @@ public class BaoCaoView extends JPanel {
         return panel;
     }
 
-    private JPanel createPhongBanPanel() {
+    private JPanel createLuongPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
 
-        // Top panel for search
+        // Top panel for search and filters
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         topPanel.setBackground(Color.WHITE);
@@ -334,23 +324,23 @@ public class BaoCaoView extends JPanel {
         searchPanel.setBackground(new Color(240, 240, 240));
         searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        searchPhongBanField = new JTextField("Tìm kiếm phòng ban...");
-        searchPhongBanField.setForeground(Color.GRAY);
-        searchPhongBanField.setPreferredSize(new Dimension(200, 30));
-        searchPhongBanField.addFocusListener(new FocusListener() {
+        searchLuongField = new JTextField("Tìm kiếm lương...");
+        searchLuongField.setForeground(Color.GRAY);
+        searchLuongField.setPreferredSize(new Dimension(200, 30));
+        searchLuongField.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (searchPhongBanField.getText().equals("Tìm kiếm phòng ban...")) {
-                    searchPhongBanField.setText("");
-                    searchPhongBanField.setForeground(Color.BLACK);
+                if (searchLuongField.getText().equals("Tìm kiếm lương...")) {
+                    searchLuongField.setText("");
+                    searchLuongField.setForeground(Color.BLACK);
                 }
             }
 
             @Override
             public void focusLost(FocusEvent e) {
-                if (searchPhongBanField.getText().isEmpty()) {
-                    searchPhongBanField.setForeground(Color.GRAY);
-                    searchPhongBanField.setText("Tìm kiếm phòng ban...");
+                if (searchLuongField.getText().isEmpty()) {
+                    searchLuongField.setForeground(Color.GRAY);
+                    searchLuongField.setText("Tìm kiếm lương...");
                 }
             }
         });
@@ -361,46 +351,89 @@ public class BaoCaoView extends JPanel {
         searchLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                String searchText = searchPhongBanField.getText().trim();
-                if (searchText.equals("Tìm kiếm phòng ban...")) {
+                String searchText = searchLuongField.getText().trim();
+                if (searchText.equals("Tìm kiếm lương...")) {
                     searchText = "";
                 }
-                searchPhongBan(searchText);
+                searchLuong(searchText);
             }
         });
 
         searchPanel.add(searchLabel, BorderLayout.WEST);
-        searchPanel.add(searchPhongBanField, BorderLayout.CENTER);
+        searchPanel.add(searchLuongField, BorderLayout.CENTER);
         topPanel.add(searchPanel, BorderLayout.WEST);
 
-        // Export button
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setBackground(Color.WHITE);
+        // Filter and export button panel
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        filterPanel.setBackground(Color.WHITE);
+
+        monthFilter = new JComboBox<>();
+        yearFilter = new JComboBox<>();
+        populateMonthFilter();
+        populateYearFilter();
+        filterPanel.add(new JLabel("Tháng:"));
+        filterPanel.add(monthFilter);
+        filterPanel.add(new JLabel("Năm:"));
+        filterPanel.add(yearFilter);
+
         JButton exportExcelButton = new JButton("Xuất Excel");
         exportExcelButton.setBackground(new Color(46, 204, 113));
         exportExcelButton.setForeground(Color.WHITE);
-        exportExcelButton.addActionListener(e -> exportPhongBanToExcel());
-        buttonPanel.add(exportExcelButton);
-        topPanel.add(buttonPanel, BorderLayout.EAST);
+        exportExcelButton.addActionListener(e -> exportLuongToExcel());
+        filterPanel.add(exportExcelButton);
+
+        topPanel.add(filterPanel, BorderLayout.EAST);
         panel.add(topPanel, BorderLayout.NORTH);
 
-        // Table for department data
-        String[] columnNames = {"Mã PB", "Tên phòng ban", "Số nhân viên"};
-        phongBanTableModel = new DefaultTableModel(columnNames, 0) {
+        // Table for salary data
+        String[] columnNames = {"Mã NV", "Họ tên", "Ngày tính lương", "Số ngày công", "Số giờ tăng ca", "Tiền thưởng", "Tổng phụ cấp", "Tổng khấu trừ", "Lương thực nhận"};
+        luongTableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
 
-        phongBanTable = new JTable(phongBanTableModel);
-        phongBanTable.setRowHeight(40);
-        JScrollPane tableScrollPane = new JScrollPane(phongBanTable);
+        luongTable = new JTable(luongTableModel);
+        luongTable.setRowHeight(40);
+        JScrollPane tableScrollPane = new JScrollPane(luongTable);
         panel.add(tableScrollPane, BorderLayout.CENTER);
 
-        // Load dữ liệu
-        loadPhongBanData();
+        // Lọc dữ liệu theo tháng và năm
+        monthFilter.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                String selectedMonth = monthFilter.getSelectedItem().toString();
+                String selectedYear = yearFilter.getSelectedItem().toString();
+                filterLuongByMonthYear(selectedMonth, selectedYear);
+            }
+        });
+        yearFilter.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                String selectedMonth = monthFilter.getSelectedItem().toString();
+                String selectedYear = yearFilter.getSelectedItem().toString();
+                filterLuongByMonthYear(selectedMonth, selectedYear);
+            }
+        });
+
+        // Load dữ liệu mặc định
+        loadLuongData();
         return panel;
+    }
+
+    private void populateMonthFilter() {
+        monthFilter.addItem("Tất cả");
+        for (int i = 1; i <= 12; i++) {
+            monthFilter.addItem(String.format("%02d", i));
+        }
+    }
+
+    private void populateYearFilter() {
+        yearFilter.addItem("Tất cả");
+        int currentYear = new Date().getYear() + 1900;
+        for (int i = currentYear - 5; i <= currentYear + 5; i++) {
+            yearFilter.addItem(String.valueOf(i));
+        }
+        yearFilter.setSelectedItem(String.valueOf(currentYear));
     }
 
     private void loadTaiKhoanData() {
@@ -411,24 +444,13 @@ public class BaoCaoView extends JPanel {
 
     private void loadNhanSuData() {
         nhanSuController = new nhanSuController();
-        List<NhanSuModel> nhanSuList = nhanSuController.getAll();
+        List<NhanSuModel> nhanSuList = nhanSuController.getAllBaoCao();
         updateNhanSuTable(nhanSuList);
     }
 
-    private void loadPhongBanData() {
-        phongBanController = new PhongBanController();
-        List<PhongBanModel> phongBanList = phongBanController.getAll();
-        updatePhongBanTable(phongBanList);
-    }
-
-    private void loadPhongBanFilter() {
-        phongBanFilter.removeAllItems();
-        phongBanFilter.addItem("Tất cả phòng ban");
-        phongBanController = new PhongBanController();
-        List<PhongBanModel> phongBanList = phongBanController.getAll();
-        for (PhongBanModel pb : phongBanList) {
-            phongBanFilter.addItem(pb.getTenPhongBan());
-        }
+    private void loadLuongData() {
+        List<LuongModel> luongList = baoCaoLuongController.getAll();
+        updateLuongTable(luongList);
     }
 
     private void searchTaiKhoan(String searchText) {
@@ -443,10 +465,9 @@ public class BaoCaoView extends JPanel {
         updateNhanSuTable(filteredList);
     }
 
-    private void searchPhongBan(String searchText) {
-        phongBanController = new PhongBanController();
-        List<PhongBanModel> filteredList = phongBanController.searchByTenPhongBan(searchText);
-        updatePhongBanTable(filteredList);
+    private void searchLuong(String searchText) {
+        List<LuongModel> filteredList = baoCaoLuongController.searchByMaNhanVien(searchText);
+        updateLuongTable(filteredList);
     }
 
     private void filterTaiKhoanByRole(String selectedRole) {
@@ -461,7 +482,7 @@ public class BaoCaoView extends JPanel {
         updateTaiKhoanTable(filteredList);
     }
 
-    private void filterNhanSu(String selectedFilter, String selectedPhongBan) {
+    private void filterNhanSu(String selectedFilter) {
         nhanSuController = new nhanSuController();
         List<NhanSuModel> filteredList;
         if ("Nhân viên mới (6 tháng)".equals(selectedFilter)) {
@@ -469,16 +490,14 @@ public class BaoCaoView extends JPanel {
         } else {
             filteredList = nhanSuController.getAll();
         }
-
-//        if (!"Tất cả phòng ban".equals(selectedPhongBan)) {
-//            phongBanController = new PhongBanController();
-//            PhongBanModel pb = phongBanController.getByTenPhongBan(selectedPhongBan);
-//            if (pb != null) {
-//                filteredList = nhanSuController.getByPhongBan(pb.getMaPhongBan());
-//            }
-//        }
-
         updateNhanSuTable(filteredList);
+    }
+
+    private void filterLuongByMonthYear(String selectedMonth, String selectedYear) {
+        int month = "Tất cả".equals(selectedMonth) ? -1 : Integer.parseInt(selectedMonth);
+        int year = "Tất cả".equals(selectedYear) ? -1 : Integer.parseInt(selectedYear);
+        List<LuongModel> filteredList = baoCaoLuongController.getByMonthYear(month, year);
+        updateLuongTable(filteredList);
     }
 
     private void updateTaiKhoanTable(List<TaiKhoanModel> taiKhoanList) {
@@ -504,23 +523,30 @@ public class BaoCaoView extends JPanel {
                 i + 1,
                 nhanSu.getMaNhanVien(),
                 nhanSu.getHoTen(),
-//                nhanSu.getTenPhongBan() != null ? nhanSu.getTenPhongBan() : "N/A",
+                nhanSu.getTenPhongBan() != null ? nhanSu.getTenPhongBan() : "N/A",
                 nhanSu.getNgayVaoLam() != null ? dateFormat.format(nhanSu.getNgayVaoLam()) : "N/A",
-//                nhanSu.getTenChucVu() != null ? nhanSu.getTenChucVu() : "N/A"
+                mapTinhTrangToDisplayName(nhanSu.getTinhTrang())
             };
             nhanSuTableModel.addRow(row);
         }
     }
 
-    private void updatePhongBanTable(List<PhongBanModel> phongBanList) {
-        phongBanTableModel.setRowCount(0);
-        for (PhongBanModel pb : phongBanList) {
+    private void updateLuongTable(List<LuongModel> luongList) {
+        luongTableModel.setRowCount(0);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        for (LuongModel luong : luongList) {
             Object[] row = {
-                pb.getMaPhongBan(),
-                pb.getTenPhongBan(),
-                pb.getSoNhanVien()
+                luong.getMaNhanVien(),
+                luong.getHoTen(),
+                luong.getNgayTinhLuong() != null ? dateFormat.format(luong.getNgayTinhLuong()) : "N/A",
+                luong.getSoNgayCong(),
+                luong.getSoGioTangCa(),
+                luong.getTienThuong() != null ? luong.getTienThuong() : BigDecimal.ZERO,
+                luong.getTongPhuCap() != null ? luong.getTongPhuCap() : BigDecimal.ZERO,
+                luong.getTongKhauTru() != null ? luong.getTongKhauTru() : BigDecimal.ZERO,
+                luong.getLuongThucNhan() != null ? luong.getLuongThucNhan() : BigDecimal.ZERO
             };
-            phongBanTableModel.addRow(row);
+            luongTableModel.addRow(row);
         }
     }
 
@@ -546,6 +572,12 @@ public class BaoCaoView extends JPanel {
         if ("Hoat_dong".equalsIgnoreCase(dbStatus)) return "Hoạt động";
         if ("Bi_khoa".equalsIgnoreCase(dbStatus)) return "Bị khóa";
         return dbStatus;
+    }
+
+    private String mapTinhTrangToDisplayName(String dbTinhTrang) {
+        if ("Dang_lam".equalsIgnoreCase(dbTinhTrang)) return "Đang làm";
+        if ("Da_nghi".equalsIgnoreCase(dbTinhTrang)) return "Đã nghỉ";
+        return dbTinhTrang != null ? dbTinhTrang : "N/A";
     }
 
     private void exportTaiKhoanToExcel() {
@@ -650,7 +682,7 @@ public class BaoCaoView extends JPanel {
 
             // Tiêu đề cột
             row = sheet.createRow(3);
-            String[] headers = {"STT", "Mã NV", "Họ tên", "Phòng ban", "Ngày vào làm", "Chức vụ"};
+            String[] headers = {"STT", "Mã NV", "Họ tên", "Phòng ban", "Ngày vào làm", "Tình trạng"};
             for (int i = 0; i < headers.length; i++) {
                 cell = row.createCell(i, CellType.STRING);
                 cell.setCellValue(headers[i]);
@@ -681,7 +713,7 @@ public class BaoCaoView extends JPanel {
                 cell = row.createCell(4, CellType.STRING);
                 cell.setCellValue(String.valueOf(nhanSuTableModel.getValueAt(i, 4)));
 
-                // Chức vụ
+                // Tình trạng
                 cell = row.createCell(5, CellType.STRING);
                 cell.setCellValue(String.valueOf(nhanSuTableModel.getValueAt(i, 5)));
             }
@@ -698,10 +730,10 @@ public class BaoCaoView extends JPanel {
         }
     }
 
-    private void exportPhongBanToExcel() {
+    private void exportLuongToExcel() {
         try {
             XSSFWorkbook workbook = new XSSFWorkbook();
-            XSSFSheet sheet = workbook.createSheet("DanhSachPhongBan");
+            XSSFSheet sheet = workbook.createSheet("DanhSachLuong");
             XSSFRow row = null;
             Cell cell = null;
 
@@ -714,41 +746,65 @@ public class BaoCaoView extends JPanel {
             // Tiêu đề
             row = sheet.createRow(0);
             cell = row.createCell(0, CellType.STRING);
-            cell.setCellValue("DANH SÁCH PHÒNG BAN");
+            cell.setCellValue("DANH SÁCH LƯƠNG");
             cell.setCellStyle(centerStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 8));
 
             // Thời gian xuất
             row = sheet.createRow(1);
             cell = row.createCell(0, CellType.STRING);
             cell.setCellValue("Thời gian xuất: " + currentDate);
             cell.setCellStyle(centerStyle);
-            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 2));
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 8));
 
             // Tiêu đề cột
             row = sheet.createRow(3);
-            String[] headers = {"Mã PB", "Tên phòng ban", "Số nhân viên"};
+            String[] headers = {"Mã NV", "Họ tên", "Ngày tính lương", "Số ngày công", "Số giờ tăng ca", "Tiền thưởng", "Tổng phụ cấp", "Tổng khấu trừ", "Lương thực nhận"};
             for (int i = 0; i < headers.length; i++) {
                 cell = row.createCell(i, CellType.STRING);
                 cell.setCellValue(headers[i]);
             }
 
             // Lấy dữ liệu từ bảng hiển thị
-            int rowCount = phongBanTableModel.getRowCount();
+            int rowCount = luongTableModel.getRowCount();
             for (int i = 0; i < rowCount; i++) {
                 row = sheet.createRow(4 + i);
 
-                // Mã PB
+                // Mã NV
                 cell = row.createCell(0, CellType.NUMERIC);
-                cell.setCellValue(((Number) phongBanTableModel.getValueAt(i, 0)).intValue());
+                cell.setCellValue(((Number) luongTableModel.getValueAt(i, 0)).intValue());
 
-                // Tên phòng ban
+                // Họ tên
                 cell = row.createCell(1, CellType.STRING);
-                cell.setCellValue(String.valueOf(phongBanTableModel.getValueAt(i, 1)));
+                cell.setCellValue(String.valueOf(luongTableModel.getValueAt(i, 1)));
 
-                // Số nhân viên
-                cell = row.createCell(2, CellType.NUMERIC);
-                cell.setCellValue(((Number) phongBanTableModel.getValueAt(i, 2)).intValue());
+                // Ngày tính lương
+                cell = row.createCell(2, CellType.STRING);
+                cell.setCellValue(String.valueOf(luongTableModel.getValueAt(i, 2)));
+
+                // Số ngày công
+                cell = row.createCell(3, CellType.NUMERIC);
+                cell.setCellValue(((Number) luongTableModel.getValueAt(i, 3)).intValue());
+
+                // Số giờ tăng ca
+                cell = row.createCell(4, CellType.NUMERIC);
+                cell.setCellValue(((Number) luongTableModel.getValueAt(i, 4)).intValue());
+
+                // Tiền thưởng
+                cell = row.createCell(5, CellType.NUMERIC);
+                cell.setCellValue(((Number) luongTableModel.getValueAt(i, 5)).doubleValue());
+
+                // Tổng phụ cấp
+                cell = row.createCell(6, CellType.NUMERIC);
+                cell.setCellValue(((Number) luongTableModel.getValueAt(i, 6)).doubleValue());
+
+                // Tổng khấu trừ
+                cell = row.createCell(7, CellType.NUMERIC);
+                cell.setCellValue(((Number) luongTableModel.getValueAt(i, 7)).doubleValue());
+
+                // Lương thực nhận
+                cell = row.createCell(8, CellType.NUMERIC);
+                cell.setCellValue(((Number) luongTableModel.getValueAt(i, 8)).doubleValue());
             }
 
             // Tự động điều chỉnh kích thước cột
@@ -756,7 +812,7 @@ public class BaoCaoView extends JPanel {
                 sheet.autoSizeColumn(i);
             }
 
-            saveExcelFile(workbook, "DanhSachPhongBan.xlsx");
+            saveExcelFile(workbook, "DanhSachLuong.xlsx");
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);

@@ -4,15 +4,23 @@
  */
 package view_nhanvien;
 
+import controller.ChucVuController;
+import controller.PhongBanController;
 import javax.swing.JPanel;
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import model.ContractModel;
+import model.NhanSuModel;
+import java.util.List;
 /**
  *
  * @author Windows
  */
 public class ProfileView extends JPanel {
-    public ProfileView() {
+    public ProfileView(NhanSuModel nhanVien, ContractModel hopDong) {
                 // Tạo panel chính chia làm 2 cột
         setLayout(new BorderLayout());
         JPanel mainPanel = new JPanel(new GridLayout(1, 2, 5, 5));
@@ -37,7 +45,7 @@ public class ProfileView extends JPanel {
         JLabel maNhanVienLabel = new JLabel("Mã nhân viên:");
         maNhanVienLabel.setFont(labelFont);
         employeePanel.add(maNhanVienLabel);
-        JTextField maNhanVienField = new JTextField("NV002");
+        JTextField maNhanVienField = new JTextField(nhanVien.getMaSo());
         maNhanVienField.setFont(fieldFont);
         maNhanVienField.setEditable(false);
         maNhanVienField.setHorizontalAlignment(JTextField.CENTER);
@@ -47,7 +55,7 @@ public class ProfileView extends JPanel {
         JLabel hoVaTenLabel = new JLabel("Họ và tên:");
         hoVaTenLabel.setFont(labelFont);
         employeePanel.add(hoVaTenLabel);
-        JTextField hoVaTenField = new JTextField("Hà Hữu Nam");
+        JTextField hoVaTenField = new JTextField(nhanVien.getHoTen());
         hoVaTenField.setFont(fieldFont);
         hoVaTenField.setEditable(false);
         hoVaTenField.setHorizontalAlignment(JTextField.CENTER);
@@ -57,7 +65,7 @@ public class ProfileView extends JPanel {
         JLabel gioiTinhLabel = new JLabel("Giới tính:");
         gioiTinhLabel.setFont(labelFont);
         employeePanel.add(gioiTinhLabel);
-        JTextField gioiTinhField = new JTextField("Nam");
+        JTextField gioiTinhField = new JTextField(nhanVien.getGioiTinh());
         gioiTinhField.setFont(fieldFont);
         gioiTinhField.setEditable(false);
         gioiTinhField.setHorizontalAlignment(JTextField.CENTER);
@@ -67,7 +75,8 @@ public class ProfileView extends JPanel {
         JLabel ngaySinhLabel = new JLabel("Ngày sinh:");
         ngaySinhLabel.setFont(labelFont);
         employeePanel.add(ngaySinhLabel);
-        JTextField ngaySinhField = new JTextField("Jun 14, 2025");
+        String ngaySinhStr = formatDate(nhanVien.getNgaySinh());
+        JTextField ngaySinhField = new JTextField(ngaySinhStr);
         ngaySinhField.setFont(fieldFont);
         ngaySinhField.setEditable(false);
         ngaySinhField.setHorizontalAlignment(JTextField.CENTER);
@@ -77,7 +86,7 @@ public class ProfileView extends JPanel {
         JLabel diaChiLabel = new JLabel("Địa chỉ:");
         diaChiLabel.setFont(labelFont);
         employeePanel.add(diaChiLabel);
-        JTextField diaChiField = new JTextField("Thái Bình");
+        JTextField diaChiField = new JTextField(nhanVien.getDiaChi());
         diaChiField.setFont(fieldFont);
         diaChiField.setEditable(false);
         diaChiField.setHorizontalAlignment(JTextField.CENTER);
@@ -87,7 +96,7 @@ public class ProfileView extends JPanel {
         JLabel soDienThoaiLabel = new JLabel("Số điện thoại:");
         soDienThoaiLabel.setFont(labelFont);
         employeePanel.add(soDienThoaiLabel);
-        JTextField soDienThoaiField = new JTextField("0964092003");
+        JTextField soDienThoaiField = new JTextField(nhanVien.getSoDienThoai());
         soDienThoaiField.setFont(fieldFont);
         soDienThoaiField.setEditable(false);
         soDienThoaiField.setHorizontalAlignment(JTextField.CENTER);
@@ -97,7 +106,7 @@ public class ProfileView extends JPanel {
         JLabel emailLabel = new JLabel("Email:");
         emailLabel.setFont(labelFont);
         employeePanel.add(emailLabel);
-        JTextField emailField = new JTextField("nam_dang_lam");
+        JTextField emailField = new JTextField(nhanVien.getEmail());
         emailField.setFont(fieldFont);
         emailField.setEditable(false);
         emailField.setHorizontalAlignment(JTextField.CENTER);
@@ -107,7 +116,7 @@ public class ProfileView extends JPanel {
         JLabel trinhDoHocVanLabel = new JLabel("Trình độ học vấn:");
         trinhDoHocVanLabel.setFont(labelFont);
         employeePanel.add(trinhDoHocVanLabel);
-        JTextField trinhDoHocVanField = new JTextField("Cao đẳng");
+        JTextField trinhDoHocVanField = new JTextField(nhanVien.getTrinhDoHocVan());
         trinhDoHocVanField.setFont(fieldFont);
         trinhDoHocVanField.setEditable(false);
         trinhDoHocVanField.setHorizontalAlignment(JTextField.CENTER);
@@ -117,7 +126,20 @@ public class ProfileView extends JPanel {
         JLabel phongBanLabel = new JLabel("Phòng ban:");
         phongBanLabel.setFont(labelFont);
         employeePanel.add(phongBanLabel);
-        JTextField phongBanField = new JTextField("1 - Chủ Tịch");
+        PhongBanController phongBanController = new PhongBanController();
+        List<String> phongbanlist = phongBanController.getPhongBanDisplayList();
+        // Lấy mã phòng ban từ nhân sự
+        int selectedMaPhongBan = nhanVien.getMaPhongBan();
+
+        // Tìm chuỗi hiển thị tương ứng với mã phòng ban
+        String phongBanDisplay = "";
+        for (String item : phongbanlist) {
+            if (item.startsWith(selectedMaPhongBan + " -")) {
+                phongBanDisplay = item;
+                break;
+            }
+        }
+        JTextField phongBanField = new JTextField(phongBanDisplay);
         phongBanField.setFont(fieldFont);
         phongBanField.setEditable(false);
         phongBanField.setHorizontalAlignment(JTextField.CENTER);
@@ -127,7 +149,22 @@ public class ProfileView extends JPanel {
         JLabel chucVuLabel = new JLabel("Chức vụ:");
         chucVuLabel.setFont(labelFont);
         employeePanel.add(chucVuLabel);
-        JTextField chucVuField = new JTextField("1 - Chủ Tịch hội đồng quản trị");
+        // load chuc vu tu database
+        ChucVuController chucVuController = new ChucVuController();
+        List<String> chucvulist = chucVuController.getChucVuDisplayList();
+        // Lấy mã chức vụ từ nhân viên
+        int selectedMaChucVu = nhanVien.getMaChucVu();
+
+        // Tìm chuỗi hiển thị phù hợp từ danh sách
+        String chucVuDisplay = "";
+        for (String item : chucvulist) {
+            if (item.startsWith(selectedMaChucVu + " -")) {
+                chucVuDisplay = item;
+                break;
+            }
+        }
+
+        JTextField chucVuField = new JTextField(chucVuDisplay);
         chucVuField.setFont(fieldFont);
         chucVuField.setEditable(false);
         chucVuField.setHorizontalAlignment(JTextField.CENTER);
@@ -137,7 +174,8 @@ public class ProfileView extends JPanel {
         JLabel ngayVaoLamLabel = new JLabel("Ngày vào làm:");
         ngayVaoLamLabel.setFont(labelFont);
         employeePanel.add(ngayVaoLamLabel);
-        JTextField ngayVaoLamField = new JTextField("Jun 14, 2025");
+        String ngayVaoLamStr = formatDate(nhanVien.getNgayVaoLam());
+        JTextField ngayVaoLamField = new JTextField(ngayVaoLamStr);
         ngayVaoLamField.setFont(fieldFont);
         ngayVaoLamField.setEditable(false);
         ngayVaoLamField.setHorizontalAlignment(JTextField.CENTER);
@@ -147,7 +185,7 @@ public class ProfileView extends JPanel {
         JLabel tinhTrangLabel = new JLabel("Tình trạng:");
         tinhTrangLabel.setFont(labelFont);
         employeePanel.add(tinhTrangLabel);
-        JTextField tinhTrangField = new JTextField("Đang làm");
+        JTextField tinhTrangField = new JTextField(nhanVien.getTinhTrang());
         tinhTrangField.setFont(fieldFont);
         tinhTrangField.setEditable(false);
         tinhTrangField.setHorizontalAlignment(JTextField.CENTER);
@@ -158,7 +196,9 @@ public class ProfileView extends JPanel {
         JLabel loaiHopDongLabel = new JLabel("Loại hợp đồng:");
         loaiHopDongLabel.setFont(labelFont);
         contractPanel.add(loaiHopDongLabel);
-        JTextField loaiHopDongField = new JTextField("Thử việc");
+        // Chuyển enum LoaiHopDong thành chuỗi
+        String loaiHopDongStr = hopDong.getLoaiHopDong().toString();
+        JTextField loaiHopDongField = new JTextField(loaiHopDongStr);
         loaiHopDongField.setFont(fieldFont);
         loaiHopDongField.setEditable(false);
         loaiHopDongField.setHorizontalAlignment(JTextField.CENTER);
@@ -168,7 +208,8 @@ public class ProfileView extends JPanel {
         JLabel ngayBatDauLabel = new JLabel("Ngày bắt đầu:");
         ngayBatDauLabel.setFont(labelFont);
         contractPanel.add(ngayBatDauLabel);
-        JTextField ngayBatDauField = new JTextField("Jun 14, 2025");
+        String ngayBatDauStr = formatDate(hopDong.getNgayBatDau());
+        JTextField ngayBatDauField = new JTextField(ngayBatDauStr);
         ngayBatDauField.setFont(fieldFont);
         ngayBatDauField.setEditable(false);
         ngayBatDauField.setHorizontalAlignment(JTextField.CENTER);
@@ -178,7 +219,8 @@ public class ProfileView extends JPanel {
         JLabel ngayKetThucLabel = new JLabel("Ngày kết thúc:");
         ngayKetThucLabel.setFont(labelFont);
         contractPanel.add(ngayKetThucLabel);
-        JTextField ngayKetThucField = new JTextField("Jun 14, 2025");
+        String ngayKetThucStr = formatDate(hopDong.getNgayKetThuc());
+        JTextField ngayKetThucField = new JTextField(ngayKetThucStr);
         ngayKetThucField.setFont(fieldFont);
         ngayKetThucField.setEditable(false);
         ngayKetThucField.setHorizontalAlignment(JTextField.CENTER);
@@ -188,7 +230,8 @@ public class ProfileView extends JPanel {
         JLabel ngayKyLabel = new JLabel("Ngày ký:");
         ngayKyLabel.setFont(labelFont);
         contractPanel.add(ngayKyLabel);
-        JTextField ngayKyField = new JTextField("Jun 14, 2025");
+        String ngayKyStr = formatDate(hopDong.getNgayKy());
+        JTextField ngayKyField = new JTextField(ngayKyStr);
         ngayKyField.setFont(fieldFont);
         ngayKyField.setEditable(false);
         ngayKyField.setHorizontalAlignment(JTextField.CENTER);
@@ -198,7 +241,8 @@ public class ProfileView extends JPanel {
         JLabel trangThaiHopDongLabel = new JLabel("Trạng thái hợp đồng:");
         trangThaiHopDongLabel.setFont(labelFont);
         contractPanel.add(trangThaiHopDongLabel);
-        JTextField trangThaiHopDongField = new JTextField("Còn hiệu lực");
+        String trangThaiHopDong = hopDong.getTrangThai().toString();
+        JTextField trangThaiHopDongField = new JTextField(trangThaiHopDong);
         trangThaiHopDongField.setFont(fieldFont);
         trangThaiHopDongField.setEditable(false);
         trangThaiHopDongField.setHorizontalAlignment(JTextField.CENTER);
@@ -208,7 +252,9 @@ public class ProfileView extends JPanel {
         JLabel luongCoBanLabel = new JLabel("Lương cơ bản:");
         luongCoBanLabel.setFont(labelFont);
         contractPanel.add(luongCoBanLabel);
-        JTextField luongCoBanField = new JTextField("10,000,000 VNĐ");
+        BigDecimal luongCoBan = hopDong.getLuongCoBan();
+        String luongStr = (luongCoBan != null) ? luongCoBan.toString() : "";
+        JTextField luongCoBanField = new JTextField(luongStr);
         luongCoBanField.setFont(fieldFont);
         luongCoBanField.setEditable(false);
         luongCoBanField.setHorizontalAlignment(JTextField.CENTER);
@@ -222,5 +268,10 @@ public class ProfileView extends JPanel {
         // Thêm mainPanel vào giao diện chính
         add(mainPanel, BorderLayout.CENTER);
     }
+    private String formatDate(Date date) {
+        if (date == null) return "";
+        return new SimpleDateFormat("dd/MM/yyyy").format(date);
+    }
+
 
 }
