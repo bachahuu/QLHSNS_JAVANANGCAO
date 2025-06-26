@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import model.ChucVuModel;
 import model.ContractModel;
 import model.NhanSuModel;
+import model.PhongBanModel;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -163,7 +165,7 @@ public class EmployeeProfileView extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // Table for employee data
-        String[] columnNames = {"Mã NV", "Họ và tên","Giới Tính", "Ngày Sinh", "Địa Chỉ", "Thông tin liên hệ", "Trạng thái", "Thao tác"};
+        String[] columnNames = {"Mã số NV", "Họ và tên","Giới Tính", "Ngày Sinh", "Địa Chỉ", "Thông tin liên hệ", "Trạng thái", "Thao tác"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1140,17 +1142,45 @@ public class EmployeeProfileView extends JPanel {
             JLabel maPhongBanLabel = new JLabel("Mã phòng ban:");
             maPhongBanLabel.setFont(labelFont);
             dialog.add(maPhongBanLabel);
-            JTextField maPhongBanField = new JTextField(String.valueOf(selectedNhanSu.getMaPhongBan()));
+            JTextField maPhongBanField = new JTextField();
             maPhongBanField.setFont(fieldFont);
             maPhongBanField.setEditable(false);
+            maPhongBanField.setBackground(new Color(240, 240, 240));
+            maPhongBanField.setForeground(Color.BLACK);
+            
+            PhongBanController phongbancontroller = new PhongBanController();
+            String displayText_phongban = "N/A";
+            if(selectedNhanSu != null){
+                int maphongban = selectedNhanSu.getMaPhongBan();
+                PhongBanModel phongban = phongbancontroller.findById(maphongban);
+                if(phongban != null){
+                    displayText_phongban = phongban.getMaPhongBan() + "-" + phongban.getTenPhongBan();
+                }
+            }
+            maPhongBanField.setText(displayText_phongban);           
             dialog.add(maPhongBanField);
 
             JLabel maChucVuLabel = new JLabel("Mã chức vụ:");
             maChucVuLabel.setFont(labelFont);
             dialog.add(maChucVuLabel);
-            JTextField maChucVuField = new JTextField(String.valueOf(selectedNhanSu.getMaChucVu()));
+
+            JTextField maChucVuField = new JTextField();
             maChucVuField.setFont(fieldFont);
             maChucVuField.setEditable(false);
+            maChucVuField.setBackground(new Color(240, 240, 240)); // Nền xám nhạt để biểu thị không chỉnh sửa
+            maChucVuField.setForeground(Color.BLACK);
+
+            // Lấy thông tin chức vụ từ ChucVuController
+            ChucVuController chucVuController = new ChucVuController();
+            String displayText = "N/A"; // Giá trị mặc định nếu không tìm thấy chức vụ
+            if (selectedNhanSu != null) {
+                int maChucVu = selectedNhanSu.getMaChucVu();
+                ChucVuModel chucVu = chucVuController.findById(maChucVu);
+                if (chucVu != null) {
+                    displayText = chucVu.getMaChucVu() + " - " + chucVu.getTenChucVu();
+                }
+            }
+            maChucVuField.setText(displayText);
             dialog.add(maChucVuField);
 
             JLabel ngayVaoLamLabel = new JLabel("Ngày vào làm:");

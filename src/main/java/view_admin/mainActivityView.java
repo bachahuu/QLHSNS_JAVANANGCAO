@@ -314,28 +314,38 @@ public class mainActivityView extends JFrame {
     
 
     private void handleHopDongTab() {
-//        System.out.println("=== XỬ LÝ TAB HỢP ĐỒNG ===");
-//        String key = "📝 Hợp Đồng".trim();
-//
-//        if (!contentPanels.containsKey(key)) {
-//            try {
-//                HopDongView hopDongPanel = new HopDongView();
-//                contentPanels.put(key, hopDongPanel);
-//                mainContentPanel.add(hopDongPanel, key); 
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//                JOptionPane.showMessageDialog(this, "Lỗi tải giao diện hợp đồng: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
-//        }
-//        cardLayout.show(mainContentPanel, key);
-//        mainContentPanel.revalidate();
-//        mainContentPanel.repaint();
+        System.out.println("=== XỬ LÝ TAB HỢP ĐỒNG ===");
+        String key = "📝 Hợp Đồng".trim();
+        
+        HopDongView hopDongPanel = new HopDongView();
+        contentPanels.put(key, hopDongPanel);
+
+        mainContentPanel.removeAll(); // quan trọng
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            JPanel panel = contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2)));
+            mainContentPanel.add(panel, panelKey);
+        }
+
+        cardLayout.show(mainContentPanel, key);
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
     }
 
 
     private void handleLeaveTab() {
         System.out.println("=== XỬ LÝ TAB NGHỈ PHÉP & NGHỈ VIỆC ===");
+        String key = "🕒 Nghỉ Phép & Nghỉ Việc".trim();
+        NghiPhepView nghiPhepView = new NghiPhepView();
+        contentPanels.put(key, nghiPhepView); // Cập nhật panel cho tab này
+        mainContentPanel.removeAll(); // Xóa các panel cũ
+        for (String item : menuItems) {
+            String panelKey = item.trim();
+            mainContentPanel.add(contentPanels.getOrDefault(panelKey, createPanel("Chào mừng đến với " + item.substring(2))), panelKey);
+        }
+        cardLayout.show(mainContentPanel, key); // Hiển thị panel mới
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
 
     }
     private void handlereportTab(){

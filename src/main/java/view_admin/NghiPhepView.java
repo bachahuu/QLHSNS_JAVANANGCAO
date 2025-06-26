@@ -4,6 +4,7 @@ import controller.NghiPhepController;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -51,7 +52,7 @@ import java.util.Calendar;
 import javax.swing.JFormattedTextField;
 
 
-public class NghiPhepView extends JFrame {
+public class NghiPhepView extends JPanel {
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -61,7 +62,7 @@ public class NghiPhepView extends JFrame {
     private DefaultListModel<NghiPhepModel> listModel;
     private NghiPhepController controller;
 
-    private final Color PRIMARY_BLUE = new Color(41, 128, 185);
+    private final Color PRIMARY_BLUE = new Color(33, 150, 243); // Đồng bộ với mainActivityView
     private final Color GREEN_VIEW_BUTTON = new Color(46, 204, 113);
     private final Color ORANGE_EDIT_BUTTON = new Color(241, 196, 15);
     private final Color RED_DELETE_BUTTON = new Color(231, 76, 60);
@@ -75,10 +76,9 @@ public class NghiPhepView extends JFrame {
     private final String[] TRANG_THAI_OPTIONS = {"Da_duyet", "Cho_duyet", "Tu_choi"};
 
     public NghiPhepView() {
-        setTitle("Quản lý nghỉ phép");
-        setSize(1200, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
+        // Khởi tạo layout cho JPanel
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
 
         controller = new NghiPhepController();
         controller.setView(this);
@@ -389,7 +389,7 @@ public class NghiPhepView extends JFrame {
         private Map<Integer, String> danhSachNhanVien;
 
         public AddNghiPhepDialog(Map<Integer, String> danhSachNhanVien) {
-            super(NghiPhepView.this, "Thêm Đơn Nghỉ Phép Mới", true);
+            super(SwingUtilities.getWindowAncestor(NghiPhepView.this), "Thêm Đơn Nghỉ Phép Mới", Dialog.ModalityType.APPLICATION_MODAL);
             this.danhSachNhanVien = danhSachNhanVien;
             setSize(450, 480);
             setLocationRelativeTo(NghiPhepView.this);
@@ -555,7 +555,7 @@ public class NghiPhepView extends JFrame {
         private JButton btnClose;
 
         public ViewNghiPhepDialog(NghiPhepModel nghiPhep) {
-            super(NghiPhepView.this, "Chi Tiết Nghỉ Phép", true);
+            super(SwingUtilities.getWindowAncestor(NghiPhepView.this), "Thêm Đơn Nghỉ Phép Mới", Dialog.ModalityType.APPLICATION_MODAL);
             setSize(400, 350);
             setLocationRelativeTo(NghiPhepView.this);
             setLayout(new BorderLayout(10, 10));
@@ -630,7 +630,7 @@ public class NghiPhepView extends JFrame {
         private Map<Integer, String> danhSachNhanVien; // Thêm danh sách nhân viên
 
         public EditNghiPhepDialog(NghiPhepModel nghiPhepToEdit, Map<Integer, String> danhSachNhanVien) {
-            super(NghiPhepView.this, "Sửa Thông Tin Nghỉ Phép", true);
+            super(SwingUtilities.getWindowAncestor(NghiPhepView.this), "Thêm Đơn Nghỉ Phép Mới", Dialog.ModalityType.APPLICATION_MODAL);
             this.originalNghiPhep = nghiPhepToEdit;
             this.danhSachNhanVien = danhSachNhanVien; // Gán danh sách nhân viên
             setSize(450, 500);
@@ -811,17 +811,17 @@ public class NghiPhepView extends JFrame {
         return textField;
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new NghiPhepView().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String[] args) {
+//        try {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                new NghiPhepView().setVisible(true);
+//            }
+//        });
+//    }
 }

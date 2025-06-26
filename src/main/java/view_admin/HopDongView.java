@@ -8,6 +8,7 @@ import controller.HopDongController;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -48,7 +49,7 @@ import javax.swing.SwingUtilities;
  *
  * @author LAPTOP
  */
-public class HopDongView extends JFrame {
+public class HopDongView extends JPanel {
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -58,22 +59,20 @@ public class HopDongView extends JFrame {
     private DefaultListModel<HopDongModel> listModel;
     private HopDongController controller;
 
-    private final Color PRIMARY_BLUE = new Color(41, 128, 185);
+    private final Color PRIMARY_BLUE = new Color(33, 150, 243); // Đồng bộ với mainActivityView
     private final Color GREEN_VIEW_BUTTON = new Color(46, 204, 113);
     private final Color ORANGE_EDIT_BUTTON = new Color(241, 196, 15);
     private final Color RED_DELETE_BUTTON = new Color(231, 76, 60);
     private final Color GREY_CANCEL_BUTTON = new Color(189, 195, 199);
-    // Màu chữ chính cho tất cả các text trên các thành phần (label, textfield, combobox, table header, table content)
     private final Color TEXT_COLOR_BLACK = Color.BLACK;
 
     // Đối tượng SimpleDateFormat dùng chung để parse và format ngày tháng
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     public HopDongView() {
-        setTitle("Quản lý hợp đồng");
-        setSize(1200, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
+        // Khởi tạo layout cho JPanel
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
 
         controller = new HopDongController();
         controller.setView(this);
@@ -367,7 +366,7 @@ public class HopDongView extends JFrame {
         private JButton btnSave, btnCancel;
 
         public AddHopDongDialog() {
-            super(HopDongView.this, "Thêm Hợp Đồng Mới", true);
+            super(SwingUtilities.getWindowAncestor(HopDongView.this), "Thêm Hợp Đồng Mới", Dialog.ModalityType.APPLICATION_MODAL);
             setSize(400, 450);
             setLocationRelativeTo(HopDongView.this);
             setLayout(new BorderLayout(10, 10));
@@ -480,7 +479,7 @@ public class HopDongView extends JFrame {
         private JButton btnClose;
 
         public ViewHopDongDialog(HopDongModel hopDong) {
-            super(HopDongView.this, "Chi Tiết Hợp Đồng", true);
+           super(SwingUtilities.getWindowAncestor(HopDongView.this), "Chi Tiết Hợp Đồng", Dialog.ModalityType.APPLICATION_MODAL);
             setSize(400, 350);
             setLocationRelativeTo(HopDongView.this);
             setLayout(new BorderLayout(10, 10));
@@ -553,7 +552,7 @@ public class HopDongView extends JFrame {
         private HopDongModel originalHopDong;
 
         public EditHopDongDialog(HopDongModel hopDongToEdit) {
-            super(HopDongView.this, "Sửa Thông Tin Hợp Đồng", true);
+            super(SwingUtilities.getWindowAncestor(HopDongView.this), "Sửa Thông Tin Hợp Đồng", Dialog.ModalityType.APPLICATION_MODAL);
             this.originalHopDong = hopDongToEdit;
             setSize(400, 500);
             setLocationRelativeTo(HopDongView.this);
@@ -561,6 +560,7 @@ public class HopDongView extends JFrame {
 
             JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
             formPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+            formPanel.setBackground(Color.WHITE);
 
             Font labelFont = new Font("Arial", Font.PLAIN, 14);
             Font componentFont = new Font("Arial", Font.PLAIN, 14);
@@ -571,26 +571,29 @@ public class HopDongView extends JFrame {
             txtMaHopDong.setText(String.valueOf(originalHopDong.getMaHopDong()));
             txtMaHopDong.setEditable(false);
             txtMaHopDong.setBackground(new Color(240, 240, 240));
-            txtMaHopDong.setForeground(TEXT_COLOR_BLACK);
+            txtMaHopDong.setForeground(Color.BLACK);
             formPanel.add(txtMaHopDong);
 
             formPanel.add(createLabel("Mã Nhân Viên:", labelFont));
             txtMaNhanVien = createTextField(componentFont);
             txtMaNhanVien.setEditable(false);
             txtMaNhanVien.setText(String.valueOf(originalHopDong.getMaNhanVien()));
+            txtMaNhanVien.setBackground(new Color(240, 240, 240));
             formPanel.add(txtMaNhanVien);
 
             formPanel.add(createLabel("Họ Tên Nhân Viên:", labelFont));
             txtHoTen = createTextField(componentFont);
             txtHoTen.setEditable(false);
             txtHoTen.setText(originalHopDong.getHoten());
+            txtHoTen.setBackground(new Color(240, 240, 240));
             formPanel.add(txtHoTen);
 
             formPanel.add(createLabel("Loại Hợp Đồng:", labelFont));
             cbLoaiHopDong = new JComboBox<>(HopDongModel.LoaiHopDong.values());
             cbLoaiHopDong.setSelectedItem(originalHopDong.getLoaiHopDong());
             cbLoaiHopDong.setFont(componentFont);
-            cbLoaiHopDong.setForeground(TEXT_COLOR_BLACK);
+            cbLoaiHopDong.setForeground(Color.BLACK);
+            cbLoaiHopDong.setBackground(Color.WHITE);
             formPanel.add(cbLoaiHopDong);
 
             formPanel.add(createLabel("Ngày Bắt Đầu (dd/MM/yyyy):", labelFont)); // Hướng dẫn định dạng
@@ -619,10 +622,12 @@ public class HopDongView extends JFrame {
             cbTrangThai = new JComboBox<>(HopDongModel.TrangThaiHopDong.values());
             cbTrangThai.setSelectedItem(originalHopDong.getTrangThai());
             cbTrangThai.setFont(componentFont);
-            cbTrangThai.setForeground(TEXT_COLOR_BLACK);
+            cbTrangThai.setForeground(Color.BLACK);
+            cbTrangThai.setBackground(Color.WHITE);
             formPanel.add(cbTrangThai);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+            
             btnSave = new JButton("Cập Nhật");
             btnCancel = new JButton("Hủy");
 
@@ -702,17 +707,17 @@ public class HopDongView extends JFrame {
         return textField;
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new HopDongView().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String[] args) {
+//        try {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                new HopDongView().setVisible(true);
+//            }
+//        });
+//    }
 }

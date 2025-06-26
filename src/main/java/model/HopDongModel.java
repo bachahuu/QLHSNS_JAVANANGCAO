@@ -14,7 +14,8 @@ import java.util.Date;
 public class HopDongModel {
     public enum LoaiHopDong {
         Chinh_thuc,
-        Thoi_vu
+        Thoi_vu,
+        Thu_viec
     }
     
     public enum TrangThaiHopDong {

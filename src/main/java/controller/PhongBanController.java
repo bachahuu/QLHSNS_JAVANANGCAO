@@ -70,6 +70,30 @@ public class PhongBanController {
 
     return displayList;
     }
+    public PhongBanModel findById(int maPhongBan) {
+        PhongBanModel phongBan = null;
+        String sql = "SELECT * FROM phong_ban WHERE ma_phong_ban = ?";
+        try (Connection conn = new Connect().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maPhongBan);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                phongBan = new PhongBanModel();
+                phongBan.setMaPhongBan(rs.getInt("ma_phong_ban"));
+                phongBan.setTenPhongBan(rs.getString("ten_phong_ban"));
+                phongBan.setMoTa(rs.getString("mo_ta"));
+                phongBan.setSoNhanVien(rs.getInt("so_nhan_vien"));
+                phongBan.setNgayThanhLap(rs.getDate("ngay_thanh_lap"));
+                String trangThaiStr = rs.getString("trang_thai");
+                TrangThaiPhongBan trangThai = TrangThaiPhongBan.valueOf(trangThaiStr);
+                phongBan.setTrangThai(trangThai);
+                phongBan.setNgayTao(rs.getTimestamp("ngay_tao"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return phongBan;
+    }
     
      // tìm theo họ và tên
     public List<PhongBanModel> searchByTenPhongBan(String tenPhongBan) {
