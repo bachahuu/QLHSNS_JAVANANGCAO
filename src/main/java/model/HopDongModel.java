@@ -13,16 +13,38 @@ import java.util.Date;
  */
 public class HopDongModel {
     public enum LoaiHopDong {
-        Chinh_thuc,
-        Thoi_vu,
-        Thu_viec
+        Chinh_thuc("Chính thức"),
+        Thoi_vu("Thời vụ"),
+        Thu_viec("Thử việc");
+
+        private final String displayName;
+
+        LoaiHopDong(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
     }
-    
+
     public enum TrangThaiHopDong {
-        Het_hieu_luc,
-        Con_hieu_luc
+        Het_hieu_luc("Hết hiệu lực"),
+        Con_hieu_luc("Còn hiệu lực");
+
+        private final String displayName;
+
+        TrangThaiHopDong(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
     }
-    
+
     private int maHopDong;
     private int maNhanVien;
     private String hoten;
@@ -31,8 +53,9 @@ public class HopDongModel {
     private Date ngayKetThuc;
     private Date ngayKy;
     private TrangThaiHopDong trangThai;
+    private double luongCoBan; // Thêm thuộc tính này
 
-    public HopDongModel(int maHopDong, int maNhanVien,String hoten, LoaiHopDong loaiHopDong, Date ngayBatDau, Date ngayKetThuc, Date ngayKy, TrangThaiHopDong trangThai) {
+    public HopDongModel(int maHopDong, int maNhanVien,String hoten, LoaiHopDong loaiHopDong, Date ngayBatDau, Date ngayKetThuc, Date ngayKy, TrangThaiHopDong trangThai, double luongCoBan) {
         this.maHopDong = maHopDong;
         this.maNhanVien = maNhanVien;
         this.hoten=hoten;
@@ -41,6 +64,7 @@ public class HopDongModel {
         this.ngayKetThuc = ngayKetThuc;
         this.ngayKy = ngayKy;
         this.trangThai = trangThai;
+        this.luongCoBan = luongCoBan; // Khởi tạo thuộc tính
     }
 
     public int getMaHopDong() {
@@ -67,7 +91,7 @@ public class HopDongModel {
         this.hoten = hoten;
     }
 
-    
+
     public LoaiHopDong getLoaiHopDong() {
         return loaiHopDong;
     }
@@ -108,4 +132,11 @@ public class HopDongModel {
         this.trangThai = trangThai;
     }
 
+    public double getLuongCoBan() { // Getter mới
+        return luongCoBan;
+    }
+
+    public void setLuongCoBan(double luongCoBan) { // Setter mới
+        this.luongCoBan = luongCoBan;
+    }
 }

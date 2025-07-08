@@ -1,10 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package view_admin;
 
 import controller.HopDongController;
+import controller.HopDongController.NhanVienItem;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -16,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -44,6 +40,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.awt.GridLayout;
 import javax.swing.SwingUtilities;
+import java.text.NumberFormat;
+import java.util.Locale;
+import javax.swing.BorderFactory;
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
+import java.util.Properties;
+import javax.swing.JFormattedTextField;
+import java.util.Calendar;
+
 
 /**
  *
@@ -54,30 +60,28 @@ public class HopDongView extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField txtTimKiem;
-    private JButton btnTimKiem, btnThemHopDong, btnXuatFile;
+    private JButton btnTimKiem, btnThemHopDong;
     private JList<HopDongModel> list;
     private DefaultListModel<HopDongModel> listModel;
     private HopDongController controller;
 
-    private final Color PRIMARY_BLUE = new Color(33, 150, 243); // Đồng bộ với mainActivityView
+    private final Color PRIMARY_BLUE = new Color(33, 150, 243);
     private final Color GREEN_VIEW_BUTTON = new Color(46, 204, 113);
     private final Color ORANGE_EDIT_BUTTON = new Color(241, 196, 15);
     private final Color RED_DELETE_BUTTON = new Color(231, 76, 60);
     private final Color GREY_CANCEL_BUTTON = new Color(189, 195, 199);
     private final Color TEXT_COLOR_BLACK = Color.BLACK;
 
-    // Đối tượng SimpleDateFormat dùng chung để parse và format ngày tháng
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    private final NumberFormat currencyFormat = NumberFormat.getNumberInstance(Locale.US);
 
     public HopDongView() {
-        // Khởi tạo layout cho JPanel
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
         controller = new HopDongController();
         controller.setView(this);
 
-        // ===== NORTH PANEL (Tìm kiếm, Thêm, Xuất file) =====
         JPanel pnNorth = new JPanel();
         pnNorth.setLayout(new BoxLayout(pnNorth, BoxLayout.X_AXIS));
         pnNorth.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -104,30 +108,17 @@ public class HopDongView extends JPanel {
         btnThemHopDong.setForeground(TEXT_COLOR_BLACK);
         btnThemHopDong.setFocusPainted(false);
 
-        btnXuatFile = new JButton("Xuất file");
-        btnXuatFile.setFont(new Font("Arial", Font.BOLD, 14));
-        btnXuatFile.setBackground(PRIMARY_BLUE);
-        btnXuatFile.setForeground(TEXT_COLOR_BLACK);
-        btnXuatFile.setFocusPainted(false);
-
-        // Thêm các thành phần tìm kiếm vào bên trái
         pnNorth.add(lblTimKiem);
         pnNorth.add(txtTimKiem);
         pnNorth.add(Box.createHorizontalStrut(10));
         pnNorth.add(btnTimKiem);
 
-        // Thêm khoảng trống co giãn để đẩy các nút "Thêm" và "Xuất file" sang phải
         pnNorth.add(Box.createHorizontalGlue());
 
-        // Thêm các nút "Thêm hợp đồng" và "Xuất file" vào bên phải
         pnNorth.add(btnThemHopDong);
-        pnNorth.add(Box.createHorizontalStrut(10)); // Khoảng cách giữa 2 nút
-        pnNorth.add(btnXuatFile);
-
 
         add(pnNorth, BorderLayout.NORTH);
 
-        // ===== TABLE CENTER =====
         JPanel pnCenter = new JPanel(new BorderLayout());
         TitledBorder titledBorder = BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY), "Danh sách hợp đồng");
@@ -138,7 +129,7 @@ public class HopDongView extends JPanel {
 
         String[] columnNames = {
             "Mã hợp đồng", "Họ tên", "Loại hợp đồng",
-            "Ngày bắt đầu", "Ngày kết thúc", "Ngày ký", "Trạng Thái", "Thao tác"
+            "Ngày bắt đầu", "Ngày kết thúc", "Ngày ký", "Trạng Thái", "Lương cơ bản", "Thao tác"
         };
 
         tableModel = new DefaultTableModel(columnNames, 0);
@@ -150,7 +141,6 @@ public class HopDongView extends JPanel {
 
         JScrollPane sp = new JScrollPane(table);
 
-        // Đặt Renderer và Editor cho cột "Thao tác"
         table.getColumn("Thao tác").setCellRenderer(new ButtonRenderer());
         table.getColumn("Thao tác").setCellEditor(new ButtonEditor(new JTextField()));
         table.getColumn("Thao tác").setPreferredWidth(210);
@@ -158,10 +148,8 @@ public class HopDongView extends JPanel {
         pnCenter.add(sp, BorderLayout.CENTER);
         add(pnCenter, BorderLayout.CENTER);
 
-        // Gắn sự kiện cho các nút
         addEventHandlers();
 
-        // Tải dữ liệu ban đầu
         loadDataToTable();
     }
 
@@ -173,7 +161,6 @@ public class HopDongView extends JPanel {
         btnThemHopDong.addActionListener(e -> controller.themHopDong());
         btnTimKiem.addActionListener(e -> controller.timKiemHopDong(txtTimKiem.getText()));
         txtTimKiem.addActionListener(e -> controller.timKiemHopDong(txtTimKiem.getText()));
-        btnXuatFile.addActionListener(e -> controller.xuatFile());
     }
 
     public void hienThiDanhSachHopDong(List<HopDongModel> danhSach) {
@@ -183,15 +170,17 @@ public class HopDongView extends JPanel {
             String ngayBatDauStr = (hd.getNgayBatDau() != null) ? dateFormat.format(hd.getNgayBatDau()) : "";
             String ngayKetThucStr = (hd.getNgayKetThuc() != null) ? dateFormat.format(hd.getNgayKetThuc()) : "";
             String ngayKyStr = (hd.getNgayKy() != null) ? dateFormat.format(hd.getNgayKy()) : "";
+            String luongCoBanFormatted = currencyFormat.format(hd.getLuongCoBan());
 
             tableModel.addRow(new Object[]{
                 hd.getMaHopDong(),
                 hd.getHoten(),
-                hd.getLoaiHopDong().name(),
+                hd.getLoaiHopDong().toString(),
                 ngayBatDauStr,
                 ngayKetThucStr,
                 ngayKyStr,
-                hd.getTrangThai().name(),
+                hd.getTrangThai().toString(),
+                luongCoBanFormatted,
                 ""
             });
         }
@@ -209,10 +198,6 @@ public class HopDongView extends JPanel {
         return JOptionPane.showConfirmDialog(this, message, "Xác nhận", JOptionPane.YES_NO_OPTION);
     }
 
-    // =========================================================
-    //         CÁC PHƯƠNG THỨC MỞ DIALOG ĐƯỢC GỌI TỪ CONTROLLER
-    // =========================================================
-
     public void openAddHopDongDialog() {
         AddHopDongDialog addDialog = new AddHopDongDialog();
         addDialog.setVisible(true);
@@ -228,11 +213,6 @@ public class HopDongView extends JPanel {
         editDialog.setVisible(true);
     }
 
-
-    // =========================================================
-    //                 INNER CLASSES CHO TABLE BUTTONS
-    // =========================================================
-
     class ButtonRenderer extends JPanel implements TableCellRenderer {
         private JButton viewButton;
         private JButton editButton;
@@ -246,7 +226,6 @@ public class HopDongView extends JPanel {
             editButton = new JButton("Sửa");
             deleteButton = new JButton("Xóa");
 
-            // Màu sắc và font cho nút consistent với PhongBanView
             viewButton.setBackground(GREEN_VIEW_BUTTON);
             viewButton.setForeground(TEXT_COLOR_BLACK);
             viewButton.setFocusPainted(false);
@@ -353,21 +332,19 @@ public class HopDongView extends JPanel {
         }
     }
 
-    // =========================================================
-    //                  INNER CLASSES CHO DIALOGS
-    // =========================================================
-
     // 1. Inner Class cho AddHopDongDialog
     class AddHopDongDialog extends JDialog {
-        private JTextField txtMaNhanVien, txtHoTen;
+        private JComboBox<NhanVienItem> cbNhanVien;
+        // private JLabel lblHoTenDisplay; // REMOVE this line
+        private JTextField txtLuongCoBan;
         private JComboBox<HopDongModel.LoaiHopDong> cbLoaiHopDong;
-        private JTextField txtNgayBatDau, txtNgayKetThuc, txtNgayKy; // Revert to JTextField
+        private JDatePickerImpl datePickerNgayBatDau, datePickerNgayKetThuc, datePickerNgayKy;
         private JComboBox<HopDongModel.TrangThaiHopDong> cbTrangThai;
         private JButton btnSave, btnCancel;
 
         public AddHopDongDialog() {
             super(SwingUtilities.getWindowAncestor(HopDongView.this), "Thêm Hợp Đồng Mới", Dialog.ModalityType.APPLICATION_MODAL);
-            setSize(400, 450);
+            setSize(400, 500);
             setLocationRelativeTo(HopDongView.this);
             setLayout(new BorderLayout(10, 10));
 
@@ -377,13 +354,35 @@ public class HopDongView extends JPanel {
             Font labelFont = new Font("Arial", Font.PLAIN, 14);
             Font componentFont = new Font("Arial", Font.PLAIN, 14);
 
-            formPanel.add(createLabel("Mã Nhân Viên:", labelFont));
-            txtMaNhanVien = createTextField(componentFont);
-            formPanel.add(txtMaNhanVien);
+            formPanel.add(createLabel("Nhân Viên:", labelFont));
+            cbNhanVien = new JComboBox<>();
+            cbNhanVien.setFont(componentFont);
+            cbNhanVien.setForeground(TEXT_COLOR_BLACK);
+            cbNhanVien.setEditable(false); // Make ComboBox not editable
+            loadNhanVienToComboBox(cbNhanVien);
+            formPanel.add(cbNhanVien);
+            
+            // REMOVE the JLabel for displaying hoten
+            // formPanel.add(createLabel("Họ Tên:", labelFont));
+            // lblHoTenDisplay = createLabel("", componentFont);
+            // lblHoTenDisplay.setForeground(TEXT_COLOR_BLACK);
+            // formPanel.add(lblHoTenDisplay);
 
-            formPanel.add(createLabel("Họ Tên:", labelFont));
-            txtHoTen = createTextField(componentFont);
-            formPanel.add(txtHoTen);
+            // REMOVE the ActionListener as hoten is now taken directly from selected item
+            // cbNhanVien.addActionListener(new ActionListener() {
+            //     @Override
+            //     public void actionPerformed(ActionEvent e) {
+            //         NhanVienItem selectedItem = (NhanVienItem) cbNhanVien.getSelectedItem();
+            //         if (selectedItem != null) {
+            //             lblHoTenDisplay.setText(selectedItem.getHoTen());
+            //         } else {
+            //             lblHoTenDisplay.setText("");
+            //         }
+            //     }
+            // });
+            // if (cbNhanVien.getSelectedItem() != null) {
+            //     lblHoTenDisplay.setText(((NhanVienItem) cbNhanVien.getSelectedItem()).getHoTen());
+            // }
 
             formPanel.add(createLabel("Loại Hợp Đồng:", labelFont));
             cbLoaiHopDong = new JComboBox<>(HopDongModel.LoaiHopDong.values());
@@ -391,23 +390,31 @@ public class HopDongView extends JPanel {
             cbLoaiHopDong.setForeground(TEXT_COLOR_BLACK);
             formPanel.add(cbLoaiHopDong);
 
-            formPanel.add(createLabel("Ngày Bắt Đầu (dd/MM/yyyy):", labelFont)); // Hướng dẫn định dạng
-            txtNgayBatDau = createTextField(componentFont);
-            formPanel.add(txtNgayBatDau);
+            // JDatePicker cho Ngày Bắt Đầu
+            formPanel.add(createLabel("Ngày Bắt Đầu:", labelFont));
+            datePickerNgayBatDau = createDatePicker(null);
+            formPanel.add(datePickerNgayBatDau);
 
-            formPanel.add(createLabel("Ngày Kết Thúc (dd/MM/yyyy):", labelFont)); // Hướng dẫn định dạng
-            txtNgayKetThuc = createTextField(componentFont);
-            formPanel.add(txtNgayKetThuc);
+            // JDatePicker cho Ngày Kết Thúc
+            formPanel.add(createLabel("Ngày Kết Thúc:", labelFont));
+            datePickerNgayKetThuc = createDatePicker(null);
+            formPanel.add(datePickerNgayKetThuc);
 
-            formPanel.add(createLabel("Ngày Ký (dd/MM/yyyy):", labelFont)); // Hướng dẫn định dạng
-            txtNgayKy = createTextField(componentFont);
-            formPanel.add(txtNgayKy);
+            // JDatePicker cho Ngày Ký
+            formPanel.add(createLabel("Ngày Ký:", labelFont));
+            datePickerNgayKy = createDatePicker(null);
+            formPanel.add(datePickerNgayKy);
 
             formPanel.add(createLabel("Trạng Thái:", labelFont));
             cbTrangThai = new JComboBox<>(HopDongModel.TrangThaiHopDong.values());
             cbTrangThai.setFont(componentFont);
             cbTrangThai.setForeground(TEXT_COLOR_BLACK);
             formPanel.add(cbTrangThai);
+
+            formPanel.add(createLabel("Lương cơ bản:", labelFont));
+            txtLuongCoBan = createTextField(componentFont);
+            formPanel.add(txtLuongCoBan);
+
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
             btnSave = new JButton("Lưu");
@@ -427,34 +434,42 @@ public class HopDongView extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        int maNV = Integer.parseInt(txtMaNhanVien.getText());
-                        String hoten = txtHoTen.getText();
+                        NhanVienItem selectedNhanVien = (NhanVienItem) cbNhanVien.getSelectedItem();
+                        if (selectedNhanVien == null) {
+                            JOptionPane.showMessageDialog(AddHopDongDialog.this, "Vui lòng chọn một nhân viên.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        Date ngayBD = (Date) datePickerNgayBatDau.getModel().getValue();
+                        Date ngayKT = (Date) datePickerNgayKetThuc.getModel().getValue();
+                        Date ngayKy = (Date) datePickerNgayKy.getModel().getValue();
+
+                        if (ngayBD == null) {
+                            JOptionPane.showMessageDialog(AddHopDongDialog.this, "Ngày bắt đầu không được để trống.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if (ngayKy == null) {
+                            JOptionPane.showMessageDialog(AddHopDongDialog.this, "Ngày ký không được để trống.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if (txtLuongCoBan.getText().trim().isEmpty()) {
+                            JOptionPane.showMessageDialog(AddHopDongDialog.this, "Lương cơ bản không được để trống.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        int maNV = selectedNhanVien.getMaNhanVien();
+                        String hoten = selectedNhanVien.getHoTen(); // Get hoten directly from selected NhanVienItem
                         HopDongModel.LoaiHopDong loaiHD = (HopDongModel.LoaiHopDong) cbLoaiHopDong.getSelectedItem();
-
-                        // Parse ngày tháng từ JTextField
-                        Date ngayBD = null;
-                        if (!txtNgayBatDau.getText().isEmpty()) {
-                            ngayBD = dateFormat.parse(txtNgayBatDau.getText());
-                        }
-                        Date ngayKT = null;
-                        if (!txtNgayKetThuc.getText().isEmpty()) {
-                            ngayKT = dateFormat.parse(txtNgayKetThuc.getText());
-                        }
-                        Date ngayKy = null;
-                        if (!txtNgayKy.getText().isEmpty()) {
-                            ngayKy = dateFormat.parse(txtNgayKy.getText());
-                        }
-
                         HopDongModel.TrangThaiHopDong trangThai = (HopDongModel.TrangThaiHopDong) cbTrangThai.getSelectedItem();
 
-                        HopDongModel newHopDong = new HopDongModel(0, maNV, hoten, loaiHD, ngayBD, ngayKT, ngayKy, trangThai);
+                        double luongCB = Double.parseDouble(txtLuongCoBan.getText().replace(",", ""));
+
+                        HopDongModel newHopDong = new HopDongModel(0, maNV, hoten, loaiHD, ngayBD, ngayKT, ngayKy, trangThai, luongCB);
 
                         controller.addHopDong(newHopDong);
                         dispose();
                     } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(AddHopDongDialog.this, "Mã nhân viên phải là số nguyên.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
-                    } catch (ParseException ex) {
-                        JOptionPane.showMessageDialog(AddHopDongDialog.this, "Định dạng ngày tháng không hợp lệ (dd/MM/yyyy).", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(AddHopDongDialog.this, "Lương cơ bản phải là số hợp lệ.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(AddHopDongDialog.this, "Lỗi khi thêm hợp đồng: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                         ex.printStackTrace();
@@ -470,17 +485,25 @@ public class HopDongView extends JPanel {
             add(formPanel, BorderLayout.CENTER);
             add(buttonPanel, BorderLayout.SOUTH);
         }
+
+        private void loadNhanVienToComboBox(JComboBox<NhanVienItem> comboBox) {
+            List<NhanVienItem> nhanVienList = controller.getAllNhanVien();
+            comboBox.removeAllItems();
+            for (NhanVienItem nv : nhanVienList) {
+                comboBox.addItem(nv);
+            }
+        }
     }
 
-    // 2. Inner Class cho ViewHopDongDialog (Không thay đổi)
+    // 2. Inner Class cho ViewHopDongDialog (không thay đổi)
     class ViewHopDongDialog extends JDialog {
         private JLabel lblMaHopDong, lblMaNhanVien, lblHoTen, lblLoaiHopDong;
-        private JLabel lblNgayBatDau, lblNgayKetThuc, lblNgayKy, lblTrangThai;
+        private JLabel lblNgayBatDau, lblNgayKetThuc, lblNgayKy, lblTrangThai, lblLuongCoBan;
         private JButton btnClose;
 
         public ViewHopDongDialog(HopDongModel hopDong) {
            super(SwingUtilities.getWindowAncestor(HopDongView.this), "Chi Tiết Hợp Đồng", Dialog.ModalityType.APPLICATION_MODAL);
-            setSize(400, 350);
+            setSize(400, 400);
             setLocationRelativeTo(HopDongView.this);
             setLayout(new BorderLayout(10, 10));
 
@@ -507,7 +530,7 @@ public class HopDongView extends JPanel {
             infoPanel.add(lblHoTen);
 
             infoPanel.add(createLabel("Loại Hợp Đồng:", labelFont));
-            lblLoaiHopDong = createLabel(hopDong.getLoaiHopDong().name(), valueFont);
+            lblLoaiHopDong = createLabel(hopDong.getLoaiHopDong().toString(), valueFont);
             infoPanel.add(lblLoaiHopDong);
 
             infoPanel.add(createLabel("Ngày Bắt Đầu:", labelFont));
@@ -523,8 +546,13 @@ public class HopDongView extends JPanel {
             infoPanel.add(lblNgayKy);
 
             infoPanel.add(createLabel("Trạng Thái:", labelFont));
-            lblTrangThai = createLabel(hopDong.getTrangThai().name(), valueFont);
+            lblTrangThai = createLabel(hopDong.getTrangThai().toString(), valueFont);
             infoPanel.add(lblTrangThai);
+
+            infoPanel.add(createLabel("Lương cơ bản:", labelFont));
+            lblLuongCoBan = createLabel(currencyFormat.format(hopDong.getLuongCoBan()), valueFont);
+            infoPanel.add(lblLuongCoBan);
+
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
             btnClose = new JButton("Đóng");
@@ -543,9 +571,12 @@ public class HopDongView extends JPanel {
 
     // 3. Inner Class cho EditHopDongDialog
     class EditHopDongDialog extends JDialog {
-        private JTextField txtMaHopDong, txtMaNhanVien, txtHoTen;
+        private JTextField txtMaHopDong;
+        private JComboBox<NhanVienItem> cbNhanVien;
+        // private JLabel lblHoTenDisplay; // REMOVE this line
+        private JTextField txtLuongCoBan;
         private JComboBox<HopDongModel.LoaiHopDong> cbLoaiHopDong;
-        private JTextField txtNgayBatDau, txtNgayKetThuc, txtNgayKy; // Revert to JTextField
+        private JDatePickerImpl datePickerNgayBatDau, datePickerNgayKetThuc, datePickerNgayKy;
         private JComboBox<HopDongModel.TrangThaiHopDong> cbTrangThai;
         private JButton btnSave, btnCancel;
 
@@ -554,7 +585,7 @@ public class HopDongView extends JPanel {
         public EditHopDongDialog(HopDongModel hopDongToEdit) {
             super(SwingUtilities.getWindowAncestor(HopDongView.this), "Sửa Thông Tin Hợp Đồng", Dialog.ModalityType.APPLICATION_MODAL);
             this.originalHopDong = hopDongToEdit;
-            setSize(400, 500);
+            setSize(400, 550);
             setLocationRelativeTo(HopDongView.this);
             setLayout(new BorderLayout(10, 10));
 
@@ -574,19 +605,32 @@ public class HopDongView extends JPanel {
             txtMaHopDong.setForeground(Color.BLACK);
             formPanel.add(txtMaHopDong);
 
-            formPanel.add(createLabel("Mã Nhân Viên:", labelFont));
-            txtMaNhanVien = createTextField(componentFont);
-            txtMaNhanVien.setEditable(false);
-            txtMaNhanVien.setText(String.valueOf(originalHopDong.getMaNhanVien()));
-            txtMaNhanVien.setBackground(new Color(240, 240, 240));
-            formPanel.add(txtMaNhanVien);
+            formPanel.add(createLabel("Nhân Viên:", labelFont));
+            cbNhanVien = new JComboBox<>();
+            cbNhanVien.setFont(componentFont);
+            cbNhanVien.setForeground(TEXT_COLOR_BLACK);
+            cbNhanVien.setEditable(false); // Make ComboBox not editable
+            loadNhanVienToComboBox(cbNhanVien, originalHopDong.getMaNhanVien());
+            formPanel.add(cbNhanVien);
+            
+            // REMOVE the JLabel for displaying hoten
+            // formPanel.add(createLabel("Họ Tên:", labelFont));
+            // lblHoTenDisplay = createLabel(originalHopDong.getHoten(), componentFont);
+            // lblHoTenDisplay.setForeground(TEXT_COLOR_BLACK);
+            // formPanel.add(lblHoTenDisplay);
 
-            formPanel.add(createLabel("Họ Tên Nhân Viên:", labelFont));
-            txtHoTen = createTextField(componentFont);
-            txtHoTen.setEditable(false);
-            txtHoTen.setText(originalHopDong.getHoten());
-            txtHoTen.setBackground(new Color(240, 240, 240));
-            formPanel.add(txtHoTen);
+            // REMOVE the ActionListener as hoten is now taken directly from selected item
+            // cbNhanVien.addActionListener(new ActionListener() {
+            //     @Override
+            //     public void actionPerformed(ActionEvent e) {
+            //         NhanVienItem selectedItem = (NhanVienItem) cbNhanVien.getSelectedItem();
+            //         if (selectedItem != null) {
+            //             lblHoTenDisplay.setText(selectedItem.getHoTen());
+            //         } else {
+            //             lblHoTenDisplay.setText("");
+            //         }
+            //     }
+            // });
 
             formPanel.add(createLabel("Loại Hợp Đồng:", labelFont));
             cbLoaiHopDong = new JComboBox<>(HopDongModel.LoaiHopDong.values());
@@ -596,27 +640,20 @@ public class HopDongView extends JPanel {
             cbLoaiHopDong.setBackground(Color.WHITE);
             formPanel.add(cbLoaiHopDong);
 
-            formPanel.add(createLabel("Ngày Bắt Đầu (dd/MM/yyyy):", labelFont)); // Hướng dẫn định dạng
-            txtNgayBatDau = createTextField(componentFont);
-            // Hiển thị ngày hiện có theo định dạng dd/MM/yyyy
-            if (originalHopDong.getNgayBatDau() != null) {
-                txtNgayBatDau.setText(dateFormat.format(originalHopDong.getNgayBatDau()));
-            }
-            formPanel.add(txtNgayBatDau);
+            // JDatePicker cho Ngày Bắt Đầu
+            formPanel.add(createLabel("Ngày Bắt Đầu:", labelFont));
+            datePickerNgayBatDau = createDatePicker(originalHopDong.getNgayBatDau());
+            formPanel.add(datePickerNgayBatDau);
 
-            formPanel.add(createLabel("Ngày Kết Thúc (dd/MM/yyyy):", labelFont)); // Hướng dẫn định dạng
-            txtNgayKetThuc = createTextField(componentFont);
-            if (originalHopDong.getNgayKetThuc() != null) {
-                txtNgayKetThuc.setText(dateFormat.format(originalHopDong.getNgayKetThuc()));
-            }
-            formPanel.add(txtNgayKetThuc);
+            // JDatePicker cho Ngày Kết Thúc
+            formPanel.add(createLabel("Ngày Kết Thúc:", labelFont));
+            datePickerNgayKetThuc = createDatePicker(originalHopDong.getNgayKetThuc());
+            formPanel.add(datePickerNgayKetThuc);
 
-            formPanel.add(createLabel("Ngày Ký (dd/MM/yyyy):", labelFont)); // Hướng dẫn định dạng
-            txtNgayKy = createTextField(componentFont);
-            if (originalHopDong.getNgayKy() != null) {
-                txtNgayKy.setText(dateFormat.format(originalHopDong.getNgayKy()));
-            }
-            formPanel.add(txtNgayKy);
+            // JDatePicker cho Ngày Ký
+            formPanel.add(createLabel("Ngày Ký:", labelFont));
+            datePickerNgayKy = createDatePicker(originalHopDong.getNgayKy());
+            formPanel.add(datePickerNgayKy);
 
             formPanel.add(createLabel("Trạng Thái:", labelFont));
             cbTrangThai = new JComboBox<>(HopDongModel.TrangThaiHopDong.values());
@@ -626,8 +663,13 @@ public class HopDongView extends JPanel {
             cbTrangThai.setBackground(Color.WHITE);
             formPanel.add(cbTrangThai);
 
+            formPanel.add(createLabel("Lương cơ bản:", labelFont));
+            txtLuongCoBan = createTextField(componentFont);
+            txtLuongCoBan.setText(currencyFormat.format(originalHopDong.getLuongCoBan()));
+            formPanel.add(txtLuongCoBan);
+
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-            
+
             btnSave = new JButton("Cập Nhật");
             btnCancel = new JButton("Hủy");
 
@@ -645,35 +687,45 @@ public class HopDongView extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
+                        NhanVienItem selectedNhanVien = (NhanVienItem) cbNhanVien.getSelectedItem();
+                        if (selectedNhanVien == null) {
+                            JOptionPane.showMessageDialog(EditHopDongDialog.this, "Vui lòng chọn một nhân viên.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        Date ngayBD = (Date) datePickerNgayBatDau.getModel().getValue();
+                        Date ngayKT = (Date) datePickerNgayKetThuc.getModel().getValue();
+                        Date ngayKy = (Date) datePickerNgayKy.getModel().getValue();
+
+                        if (ngayBD == null) {
+                            JOptionPane.showMessageDialog(EditHopDongDialog.this, "Ngày bắt đầu không được để trống.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if (ngayKy == null) {
+                            JOptionPane.showMessageDialog(EditHopDongDialog.this, "Ngày ký không được để trống.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if (txtLuongCoBan.getText().trim().isEmpty()) {
+                            JOptionPane.showMessageDialog(EditHopDongDialog.this, "Lương cơ bản không được để trống.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
                         int maHD = originalHopDong.getMaHopDong();
-                        int maNV = Integer.parseInt(txtMaNhanVien.getText());
-                        String hoten = txtHoTen.getText();
+                        int maNV = selectedNhanVien.getMaNhanVien();
+                        String hoten = selectedNhanVien.getHoTen(); // Get hoten directly from selected NhanVienItem
                         HopDongModel.LoaiHopDong loaiHD = (HopDongModel.LoaiHopDong) cbLoaiHopDong.getSelectedItem();
-
-                        // Parse ngày tháng từ JTextField
-                        Date ngayBD = null;
-                        if (!txtNgayBatDau.getText().isEmpty()) {
-                            ngayBD = dateFormat.parse(txtNgayBatDau.getText());
-                        }
-                        Date ngayKT = null;
-                        if (!txtNgayKetThuc.getText().isEmpty()) {
-                            ngayKT = dateFormat.parse(txtNgayKetThuc.getText());
-                        }
-                        Date ngayKy = null;
-                        if (!txtNgayKy.getText().isEmpty()) {
-                            ngayKy = dateFormat.parse(txtNgayKy.getText());
-                        }
-
                         HopDongModel.TrangThaiHopDong trangThai = (HopDongModel.TrangThaiHopDong) cbTrangThai.getSelectedItem();
 
-                        HopDongModel updatedHopDong = new HopDongModel(maHD, maNV, hoten, loaiHD, ngayBD, ngayKT, ngayKy, trangThai);
+                        double luongCB = currencyFormat.parse(txtLuongCoBan.getText()).doubleValue();
+
+                        HopDongModel updatedHopDong = new HopDongModel(maHD, maNV, hoten, loaiHD, ngayBD, ngayKT, ngayKy, trangThai, luongCB);
 
                         controller.updateHopDong(updatedHopDong);
                         dispose();
                     } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(EditHopDongDialog.this, "Mã nhân viên phải là số nguyên.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(EditHopDongDialog.this, "Lương cơ bản phải là số hợp lệ.", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
                     } catch (ParseException ex) {
-                        JOptionPane.showMessageDialog(EditHopDongDialog.this, "Định dạng ngày tháng không hợp lệ (dd/MM/yyyy).", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(EditHopDongDialog.this, "Định dạng ngày tháng hoặc lương cơ bản không hợp lệ (dd/MM/yyyy hoặc định dạng số).", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(EditHopDongDialog.this, "Lỗi khi cập nhật hợp đồng: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                         ex.printStackTrace();
@@ -689,9 +741,23 @@ public class HopDongView extends JPanel {
             add(formPanel, BorderLayout.CENTER);
             add(buttonPanel, BorderLayout.SOUTH);
         }
+
+        private void loadNhanVienToComboBox(JComboBox<NhanVienItem> comboBox, int currentMaNV) {
+            List<NhanVienItem> nhanVienList = controller.getAllNhanVien();
+            comboBox.removeAllItems();
+            NhanVienItem selectedItem = null;
+            for (NhanVienItem nv : nhanVienList) {
+                comboBox.addItem(nv);
+                if (nv.getMaNhanVien() == currentMaNV) {
+                    selectedItem = nv;
+                }
+            }
+            if (selectedItem != null) {
+                comboBox.setSelectedItem(selectedItem);
+            }
+        }
     }
 
-    // Helper method to create consistent JLabels
     private JLabel createLabel(String text, Font font) {
         JLabel label = new JLabel(text);
         label.setFont(font);
@@ -699,7 +765,6 @@ public class HopDongView extends JPanel {
         return label;
     }
 
-    // Helper method to create consistent JTextFields
     private JTextField createTextField(Font font) {
         JTextField textField = new JTextField();
         textField.setFont(font);
@@ -707,17 +772,42 @@ public class HopDongView extends JPanel {
         return textField;
     }
 
-//    public static void main(String[] args) {
-//        try {
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                new HopDongView().setVisible(true);
-//            }
-//        });
-//    }
+    // Helper method to create JDatePicker
+    private JDatePickerImpl createDatePicker(Date initialDate) {
+        UtilDateModel model = new UtilDateModel();
+        if (initialDate != null) {
+            model.setValue(initialDate);
+            model.setSelected(true);
+        }
+        Properties p = new Properties();
+        p.put("text.today", "Today");
+        p.put("text.month", "Month");
+        p.put("text.year", "Year");
+        JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+        datePicker.getJFormattedTextField().setFont(new Font("Arial", Font.PLAIN, 14));
+        datePicker.getJFormattedTextField().setForeground(TEXT_COLOR_BLACK);
+        return datePicker;
+    }
+
+    // Helper class for formatting DatePicker
+    public class DateLabelFormatter extends JFormattedTextField.AbstractFormatter {
+
+        private String datePattern = "dd/MM/yyyy";
+        private SimpleDateFormat dateFormatter = new SimpleDateFormat(datePattern);
+
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            return dateFormatter.parseObject(text);
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            if (value != null) {
+                Calendar cal = (Calendar) value;
+                return dateFormatter.format(cal.getTime());
+            }
+            return "";
+        }
+    }
 }

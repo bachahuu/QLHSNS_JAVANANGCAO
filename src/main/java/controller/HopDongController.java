@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package controller;
 
 import java.sql.Connection;
@@ -15,7 +11,7 @@ import javax.swing.JOptionPane;
 import model.Connect;
 import model.HopDongModel;
 import view_admin.HopDongView;
-import java.sql.Date; // Sử dụng java.sql.Date cho các thao tác với PreparedStatement
+import java.sql.Date;
 
 /**
  *
@@ -26,6 +22,13 @@ public class HopDongController {
 
     public void setView(HopDongView view) {
         this.view = view;
+    }
+
+    public void loadAllHopDong() {
+        List<HopDongModel> danhSach = getAll();
+        if (view != null) {
+            view.hienThiDanhSachHopDong(danhSach);
+        }
     }
 
     public List<HopDongModel> getAll() {
@@ -40,16 +43,15 @@ public class HopDongController {
 
             if (conn != null) {
                 System.out.println("Kết nối thành công");
-                stmt = conn.createStatement();
-
                 String sqlQuery = "SELECT hd.ma_hop_dong, hd.ma_nhan_vien, nv.ho_ten, " +
-                                  "hd.loai_hop_dong, hd.ngay_bat_dau, hd.ngay_ket_thuc, hd.ngay_ky, hd.trang_thai " +
+                                  "hd.loai_hop_dong, hd.ngay_bat_dau, hd.ngay_ket_thuc, hd.ngay_ky, hd.trang_thai, hd.luong_co_ban " +
                                   "FROM hop_dong hd JOIN nhan_vien nv ON hd.ma_nhan_vien = nv.ma_nhan_vien";
                 System.out.println("Thực thi truy vấn: " + sqlQuery);
+                stmt = conn.createStatement();
                 rs = stmt.executeQuery(sqlQuery);
 
                 if (!rs.isBeforeFirst()) {
-                    System.out.println("ResultSet rỗng, không có dữ liệu trả về từ database.");
+                    System.out.println("Không có dữ liệu hợp đồng nào.");
                 }
 
                 while (rs.next()) {
@@ -61,7 +63,8 @@ public class HopDongController {
                         rs.getDate("ngay_bat_dau"),
                         rs.getDate("ngay_ket_thuc"),
                         rs.getDate("ngay_ky"),
-                        HopDongModel.TrangThaiHopDong.valueOf(rs.getString("trang_thai"))
+                        HopDongModel.TrangThaiHopDong.valueOf(rs.getString("trang_thai")),
+                        rs.getDouble("luong_co_ban")
                     );
                     list.add(hd);
                     System.out.println("Đã thêm hợp đồng vào danh sách: " + hd.getMaHopDong() + " - " + hd.getHoten());
@@ -83,21 +86,13 @@ public class HopDongController {
         return list;
     }
 
-    public void loadAllHopDong() {
-        List<HopDongModel> danhSachHopDong = getAll();
-        if (view != null) {
-            view.hienThiDanhSachHopDong(danhSachHopDong);
-        }
-    }
-
     public void timKiemHopDong(String tuKhoa) {
-        if (tuKhoa.isEmpty()) {
-            if (view != null) {
-                view.hienThiThongBao("Vui lòng nhập từ khóa tìm kiếm!");
-                loadAllHopDong();
-            }
+        if (tuKhoa == null || tuKhoa.trim().isEmpty()) {
+            if (view != null) view.hienThiThongBao("Vui lòng nhập từ khóa tìm kiếm.");
+            loadAllHopDong();
             return;
         }
+
         List<HopDongModel> ketQua = new ArrayList<>();
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -109,7 +104,7 @@ public class HopDongController {
 
             if (conn != null) {
                 String sql = "SELECT hd.ma_hop_dong, hd.ma_nhan_vien, nv.ho_ten, " +
-                             "hd.loai_hop_dong, hd.ngay_bat_dau, hd.ngay_ket_thuc, hd.ngay_ky, hd.trang_thai " +
+                             "hd.loai_hop_dong, hd.ngay_bat_dau, hd.ngay_ket_thuc, hd.ngay_ky, hd.trang_thai, hd.luong_co_ban " +
                              "FROM hop_dong hd JOIN nhan_vien nv ON hd.ma_nhan_vien = nv.ma_nhan_vien " +
                              "WHERE nv.ho_ten LIKE ? OR CAST(hd.ma_hop_dong AS CHAR) LIKE ?";
                 pstmt = conn.prepareStatement(sql);
@@ -127,7 +122,8 @@ public class HopDongController {
                         rs.getDate("ngay_bat_dau"),
                         rs.getDate("ngay_ket_thuc"),
                         rs.getDate("ngay_ky"),
-                        HopDongModel.TrangThaiHopDong.valueOf(rs.getString("trang_thai"))
+                        HopDongModel.TrangThaiHopDong.valueOf(rs.getString("trang_thai")),
+                        rs.getDouble("luong_co_ban")
                     );
                     ketQua.add(hd);
                 }
@@ -146,8 +142,8 @@ public class HopDongController {
         }
 
         if (view != null) {
-            if (ketQua.isEmpty() && !tuKhoa.isEmpty()) {
-                view.hienThiThongBao("Không tìm thấy hợp đồng nào phù hợp với từ khóa: " + tuKhoa);
+            if (ketQua.isEmpty()) {
+                view.hienThiThongBao("Không tìm thấy hợp đồng nào phù hợp.");
             }
             view.hienThiDanhSachHopDong(ketQua);
         }
@@ -155,79 +151,92 @@ public class HopDongController {
 
     public void themHopDong() {
         if (view != null) {
-            view.openAddHopDongDialog(); // Yêu cầu View mở dialog thêm
+            view.openAddHopDongDialog();
         }
     }
 
-    public void xuatFile() {
-        if (view != null) {
-            view.hienThiThongBao("Thực hiện xuất file dữ liệu hợp đồng.");
-            // TODO: Implement logic xuất dữ liệu ra file (Excel, PDF, CSV, v.v.)
-        }
-    }
-
-    public void xemChiTietHopDong(int maHopDong, String hoten) {
-        if (view != null) {
-            HopDongModel hd = getHopDongById(maHopDong);
-            if (hd != null) {
-                view.openViewHopDongDialog(hd); // Yêu cầu View mở dialog xem chi tiết
-            } else {
-                view.hienThiLoi("Không tìm thấy hợp đồng có mã: " + maHopDong);
-            }
-        }
-    }
-
-    public void suaHopDong(int maHopDong, String hoten) {
-        if (view != null) {
-            HopDongModel hd = getHopDongById(maHopDong);
-            if (hd != null) {
-                view.openEditHopDongDialog(hd); // Yêu cầu View mở dialog sửa
-            } else {
-                view.hienThiLoi("Không tìm thấy hợp đồng có mã: " + maHopDong);
-            }
-        }
-    }
-
-    public void xoaHopDong(int maHopDong, String hoten) {
-        if (view != null) {
-            int confirm = view.hienThiXacNhan("Bạn có chắc chắn muốn xóa hợp đồng: Mã HD=" + maHopDong + " - Tên NV=" + hoten + "?");
-            if (confirm == JOptionPane.YES_OPTION) {
-                boolean success = deleteHopDongFromDB(maHopDong);
-                if (success) {
-                    view.hienThiThongBao("Đã xóa hợp đồng: " + maHopDong + " - " + hoten);
-                    loadAllHopDong();
-                } else {
-                    view.hienThiLoi("Xóa hợp đồng thất bại. Vui lòng thử lại.");
-                }
-            }
-        }
-    }
-
-    public boolean deleteHopDongFromDB(int maHopDong) {
+    public void addHopDong(HopDongModel newHopDong) {
         Connection conn = null;
         PreparedStatement pstmt = null;
+        ResultSet rs = null; // Added ResultSet for the new check
         try {
             Connect mc = new Connect();
             conn = mc.getConnection();
             if (conn != null) {
-                String sql = "DELETE FROM hop_dong WHERE ma_hop_dong = ?";
+                // Check if ma_nhan_vien exists in nhan_vien table
+                String checkNVSql = "SELECT COUNT(*) FROM nhan_vien WHERE ma_nhan_vien = ?";
+                PreparedStatement checkNVPstmt = conn.prepareStatement(checkNVSql);
+                checkNVPstmt.setInt(1, newHopDong.getMaNhanVien());
+                rs = checkNVPstmt.executeQuery();
+                rs.next();
+                if (rs.getInt(1) == 0) {
+                    view.hienThiLoi("Mã nhân viên không tồn tại trong hệ thống.");
+                    return;
+                }
+                rs.close();
+                checkNVPstmt.close();
+
+                // NEW: Check for duplicate ma_nhan_vien for active contracts
+                // This assumes an employee can only have one active contract at a time
+                if (newHopDong.getTrangThai() == HopDongModel.TrangThaiHopDong.Con_hieu_luc) {
+                    String checkDuplicateContractSql = "SELECT COUNT(*) FROM hop_dong WHERE ma_nhan_vien = ? AND trang_thai = 'Con_hieu_luc'";
+                    PreparedStatement checkDuplicatePstmt = conn.prepareStatement(checkDuplicateContractSql);
+                    checkDuplicatePstmt.setInt(1, newHopDong.getMaNhanVien());
+                    rs = checkDuplicatePstmt.executeQuery();
+                    rs.next();
+                    if (rs.getInt(1) > 0) {
+                        view.hienThiLoi("Nhân viên này đã có hợp đồng còn hiệu lực. Vui lòng kiểm tra lại.");
+                        return;
+                    }
+                    rs.close();
+                    checkDuplicatePstmt.close();
+                }
+
+                String sql = "INSERT INTO hop_dong (ma_nhan_vien, loai_hop_dong, ngay_bat_dau, ngay_ket_thuc, ngay_ky, trang_thai, luong_co_ban) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 pstmt = conn.prepareStatement(sql);
-                pstmt.setInt(1, maHopDong);
+                pstmt.setInt(1, newHopDong.getMaNhanVien());
+                pstmt.setString(2, newHopDong.getLoaiHopDong().name());
+                pstmt.setDate(3, (newHopDong.getNgayBatDau() != null) ? new java.sql.Date(newHopDong.getNgayBatDau().getTime()) : null);
+                pstmt.setDate(4, (newHopDong.getNgayKetThuc() != null) ? new java.sql.Date(newHopDong.getNgayKetThuc().getTime()) : null);
+                pstmt.setDate(5, (newHopDong.getNgayKy() != null) ? new java.sql.Date(newHopDong.getNgayKy().getTime()) : null);
+                pstmt.setString(6, newHopDong.getTrangThai().name());
+                pstmt.setDouble(7, newHopDong.getLuongCoBan());
                 int rowsAffected = pstmt.executeUpdate();
-                return rowsAffected > 0;
+                if (rowsAffected > 0 && view != null) {
+                    view.hienThiThongBao("Thêm hợp đồng thành công!");
+                    loadAllHopDong();
+                } else {
+                     view.hienThiLoi("Thêm hợp đồng thất bại. Có thể Mã nhân viên không tồn tại hoặc lỗi khác.");
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            if (view != null) view.hienThiLoi("Lỗi SQL khi xóa hợp đồng: " + e.getMessage());
+            // Handle SQLIntegrityConstraintViolationException for actual unique key violations
+            if (e.getSQLState().startsWith("23")) { // SQLState for integrity constraint violation
+                view.hienThiLoi("Lỗi: Không thể thêm hợp đồng. Có thể do ràng buộc duy nhất bị vi phạm (ví dụ: nhân viên đã có hợp đồng).");
+            } else {
+                view.hienThiLoi("Lỗi SQL khi thêm hợp đồng: " + e.getMessage());
+            }
         } finally {
             try {
+                if (rs != null) rs.close(); // Close ResultSet
                 if (pstmt != null) pstmt.close();
                 if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return false;
+    }
+
+    public void xemChiTietHopDong(int maHopDong, String hoten) {
+        HopDongModel hopDong = getHopDongById(maHopDong);
+        if (hopDong != null) {
+            if (view != null) {
+                view.openViewHopDongDialog(hopDong);
+            }
+        } else {
+            if (view != null) view.hienThiLoi("Không tìm thấy hợp đồng với mã: " + maHopDong);
+        }
     }
 
     public HopDongModel getHopDongById(int maHopDong) {
@@ -242,7 +251,7 @@ public class HopDongController {
 
             if (conn != null) {
                 String sql = "SELECT hd.ma_hop_dong, hd.ma_nhan_vien, nv.ho_ten, " +
-                             "hd.loai_hop_dong, hd.ngay_bat_dau, hd.ngay_ket_thuc, hd.ngay_ky, hd.trang_thai " +
+                             "hd.loai_hop_dong, hd.ngay_bat_dau, hd.ngay_ket_thuc, hd.ngay_ky, hd.trang_thai, hd.luong_co_ban " +
                              "FROM hop_dong hd JOIN nhan_vien nv ON hd.ma_nhan_vien = nv.ma_nhan_vien " +
                              "WHERE hd.ma_hop_dong = ?";
                 pstmt = conn.prepareStatement(sql);
@@ -259,7 +268,8 @@ public class HopDongController {
                         rs.getDate("ngay_bat_dau"),
                         rs.getDate("ngay_ket_thuc"),
                         rs.getDate("ngay_ky"),
-                        HopDongModel.TrangThaiHopDong.valueOf(rs.getString("trang_thai"))
+                        HopDongModel.TrangThaiHopDong.valueOf(rs.getString("trang_thai")),
+                        rs.getDouble("luong_co_ban")
                     );
                 }
             }
@@ -278,54 +288,43 @@ public class HopDongController {
         return hd;
     }
 
-    // Phương thức thêm hợp đồng vào database
-    public void addHopDong(HopDongModel newHopDong) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        try {
-            Connect mc = new Connect();
-            conn = mc.getConnection();
-            if (conn != null) {
-                // hoten không có trong bảng hop_dong, chỉ có ma_nhan_vien
-                String sql = "INSERT INTO hop_dong (ma_nhan_vien, loai_hop_dong, ngay_bat_dau, ngay_ket_thuc, ngay_ky, trang_thai) VALUES (?, ?, ?, ?, ?, ?)";
-                pstmt = conn.prepareStatement(sql);
-                pstmt.setInt(1, newHopDong.getMaNhanVien());
-                pstmt.setString(2, newHopDong.getLoaiHopDong().name());
-                pstmt.setDate(3, new Date(newHopDong.getNgayBatDau().getTime())); // Chuyển đổi util.Date sang sql.Date
-                pstmt.setDate(4, new Date(newHopDong.getNgayKetThuc().getTime()));
-                pstmt.setDate(5, new Date(newHopDong.getNgayKy().getTime()));
-                pstmt.setString(6, newHopDong.getTrangThai().name());
-                int rowsAffected = pstmt.executeUpdate();
-                if (rowsAffected > 0 && view != null) {
-                    view.hienThiThongBao("Thêm hợp đồng thành công!");
-                    loadAllHopDong(); // Cập nhật lại bảng
-                } else {
-                     view.hienThiLoi("Thêm hợp đồng thất bại. Có thể Mã nhân viên không tồn tại hoặc lỗi khác.");
-                }
+
+    public void suaHopDong(int maHopDong, String hoten) {
+        HopDongModel hopDongToEdit = getHopDongById(maHopDong);
+        if (hopDongToEdit != null) {
+            if (view != null) {
+                view.openEditHopDongDialog(hopDongToEdit);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            view.hienThiLoi("Lỗi SQL khi thêm hợp đồng: " + e.getMessage());
-        } finally {
-            try {
-                if (pstmt != null) pstmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+        } else {
+            if (view != null) view.hienThiLoi("Không tìm thấy hợp đồng để sửa với mã: " + maHopDong);
         }
     }
 
-    // Phương thức cập nhật hợp đồng vào database
     public void updateHopDong(HopDongModel updatedHopDong) {
         Connection conn = null;
         PreparedStatement pstmt = null;
+        ResultSet rs = null; // Added ResultSet for the new check
         try {
             Connect mc = new Connect();
             conn = mc.getConnection();
             if (conn != null) {
-                // hoten không có trong bảng hop_dong, chỉ có ma_nhan_vien
-                String sql = "UPDATE hop_dong SET ma_nhan_vien = ?, loai_hop_dong = ?, ngay_bat_dau = ?, ngay_ket_thuc = ?, ngay_ky = ?, trang_thai = ? WHERE ma_hop_dong = ?";
+                // NEW: Check for duplicate ma_nhan_vien for active contracts, excluding the current contract being updated
+                if (updatedHopDong.getTrangThai() == HopDongModel.TrangThaiHopDong.Con_hieu_luc) {
+                    String checkDuplicateContractSql = "SELECT COUNT(*) FROM hop_dong WHERE ma_nhan_vien = ? AND trang_thai = 'Con_hieu_luc' AND ma_hop_dong != ?";
+                    PreparedStatement checkDuplicatePstmt = conn.prepareStatement(checkDuplicateContractSql);
+                    checkDuplicatePstmt.setInt(1, updatedHopDong.getMaNhanVien());
+                    checkDuplicatePstmt.setInt(2, updatedHopDong.getMaHopDong());
+                    rs = checkDuplicatePstmt.executeQuery();
+                    rs.next();
+                    if (rs.getInt(1) > 0) {
+                        view.hienThiLoi("Nhân viên này đã có hợp đồng còn hiệu lực khác. Vui lòng kiểm tra lại.");
+                        return;
+                    }
+                    rs.close();
+                    checkDuplicatePstmt.close();
+                }
+
+                String sql = "UPDATE hop_dong SET ma_nhan_vien = ?, loai_hop_dong = ?, ngay_bat_dau = ?, ngay_ket_thuc = ?, ngay_ky = ?, trang_thai = ?, luong_co_ban = ? WHERE ma_hop_dong = ?";
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setInt(1, updatedHopDong.getMaNhanVien());
                 pstmt.setString(2, updatedHopDong.getLoaiHopDong().name());
@@ -333,11 +332,12 @@ public class HopDongController {
                 pstmt.setDate(4, (updatedHopDong.getNgayKetThuc() != null) ? new java.sql.Date(updatedHopDong.getNgayKetThuc().getTime()) : null);
                 pstmt.setDate(5, (updatedHopDong.getNgayKy() != null) ? new java.sql.Date(updatedHopDong.getNgayKy().getTime()) : null);
                 pstmt.setString(6, updatedHopDong.getTrangThai().name());
-                pstmt.setInt(7, updatedHopDong.getMaHopDong());
+                pstmt.setDouble(7, updatedHopDong.getLuongCoBan());
+                pstmt.setInt(8, updatedHopDong.getMaHopDong());
                 int rowsAffected = pstmt.executeUpdate();
                 if (rowsAffected > 0 && view != null) {
                     view.hienThiThongBao("Cập nhật hợp đồng thành công!");
-                    loadAllHopDong(); // Cập nhật lại bảng
+                    loadAllHopDong();
                 } else {
                      view.hienThiLoi("Cập nhật hợp đồng thất bại. Có thể Mã nhân viên không tồn tại hoặc lỗi khác.");
                 }
@@ -347,11 +347,107 @@ public class HopDongController {
             view.hienThiLoi("Lỗi SQL khi cập nhật hợp đồng: " + e.getMessage());
         } finally {
             try {
+                if (rs != null) rs.close(); // Close ResultSet
                 if (pstmt != null) pstmt.close();
                 if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void xoaHopDong(int maHopDong, String hoten) {
+        if (view != null) {
+            int confirm = view.hienThiXacNhan("Bạn có chắc chắn muốn xóa hợp đồng của " + hoten + " (Mã HD: " + maHopDong + ") không?");
+            if (confirm == JOptionPane.YES_OPTION) {
+                Connection conn = null;
+                PreparedStatement pstmt = null;
+                try {
+                    Connect mc = new Connect();
+                    conn = mc.getConnection();
+                    if (conn != null) {
+                        String sql = "DELETE FROM hop_dong WHERE ma_hop_dong = ?";
+                        pstmt = conn.prepareStatement(sql);
+                        pstmt.setInt(1, maHopDong);
+                        int rowsAffected = pstmt.executeUpdate();
+                        if (rowsAffected > 0 && view != null) {
+                            view.hienThiThongBao("Xóa hợp đồng thành công!");
+                            loadAllHopDong();
+                        } else {
+                            view.hienThiLoi("Không tìm thấy hợp đồng để xóa hoặc xóa thất bại.");
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    view.hienThiLoi("Lỗi SQL khi xóa hợp đồng: " + e.getMessage());
+                } finally {
+                    try {
+                        if (pstmt != null) pstmt.close();
+                        if (conn != null) conn.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    // Phương thức mới để lấy danh sách nhân viên cho ComboBox
+    public List<NhanVienItem> getAllNhanVien() {
+        List<NhanVienItem> nhanVienList = new ArrayList<>();
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            conn = mc.getConnection();
+
+            if (conn != null) {
+                String sqlQuery = "SELECT ma_nhan_vien, ho_ten FROM nhan_vien ORDER BY ho_ten";
+                stmt = conn.createStatement();
+                rs = stmt.executeQuery(sqlQuery);
+
+                while (rs.next()) {
+                    nhanVienList.add(new NhanVienItem(rs.getInt("ma_nhan_vien"), rs.getString("ho_ten")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            if (view != null) view.hienThiLoi("Lỗi khi tải danh sách nhân viên: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return nhanVienList;
+    }
+
+    // Lớp nội bộ để biểu diễn cặp Mã nhân viên - Họ tên trong ComboBox
+    public static class NhanVienItem {
+        private int maNhanVien;
+        private String hoTen;
+
+        public NhanVienItem(int maNhanVien, String hoTen) {
+            this.maNhanVien = maNhanVien;
+            this.hoTen = hoTen;
+        }
+
+        public int getMaNhanVien() {
+            return maNhanVien;
+        }
+
+        public String getHoTen() {
+            return hoTen;
+        }
+
+        @Override
+        public String toString() {
+            return hoTen; // Chỉ hiển thị Họ tên
         }
     }
 }

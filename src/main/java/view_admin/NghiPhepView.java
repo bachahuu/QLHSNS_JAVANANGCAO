@@ -57,7 +57,7 @@ public class NghiPhepView extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField txtTimKiem;
-    private JButton btnTimKiem, btnThemNghiPhep, btnXuatFile;
+    private JButton btnTimKiem, btnThemNghiPhep; // Removed btnXuatFile
     private JList<NghiPhepModel> list;
     private DefaultListModel<NghiPhepModel> listModel;
     private NghiPhepController controller;
@@ -110,11 +110,12 @@ public class NghiPhepView extends JPanel {
         btnThemNghiPhep.setForeground(TEXT_COLOR_BLACK);
         btnThemNghiPhep.setFocusPainted(false);
 
-        btnXuatFile = new JButton("Xuất file");
-        btnXuatFile.setFont(new Font("Arial", Font.BOLD, 14));
-        btnXuatFile.setBackground(PRIMARY_BLUE);
-        btnXuatFile.setForeground(TEXT_COLOR_BLACK);
-        btnXuatFile.setFocusPainted(false);
+        // Removed btnXuatFile and its related code
+        // btnXuatFile = new JButton("Xuất file");
+        // btnXuatFile.setFont(new Font("Arial", Font.BOLD, 14));
+        // btnXuatFile.setBackground(PRIMARY_BLUE);
+        // btnXuatFile.setForeground(TEXT_COLOR_BLACK);
+        // btnXuatFile.setFocusPainted(false);
 
         pnNorth.add(lblTimKiem);
         pnNorth.add(txtTimKiem);
@@ -124,8 +125,8 @@ public class NghiPhepView extends JPanel {
         pnNorth.add(Box.createHorizontalGlue());
 
         pnNorth.add(btnThemNghiPhep);
-        pnNorth.add(Box.createHorizontalStrut(10));
-        pnNorth.add(btnXuatFile);
+        // pnNorth.add(Box.createHorizontalStrut(10)); // Removed this strut as btnXuatFile is gone
+        // pnNorth.add(btnXuatFile); // Removed btnXuatFile
 
         add(pnNorth, BorderLayout.NORTH);
 
@@ -171,7 +172,7 @@ public class NghiPhepView extends JPanel {
         btnThemNghiPhep.addActionListener(e -> controller.themNghiPhep());
         btnTimKiem.addActionListener(e -> controller.timKiemNghiPhep(txtTimKiem.getText())); 
         txtTimKiem.addActionListener(e -> controller.timKiemNghiPhep(txtTimKiem.getText())); 
-        btnXuatFile.addActionListener(e -> controller.xuatFile(tableModel));
+        // Removed btnXuatFile.addActionListener(e -> controller.xuatFile(tableModel));
     }
 
     public void hienThiDanhSachNghiPhep(List<NghiPhepModel> danhSach) {
@@ -184,13 +185,82 @@ public class NghiPhepView extends JPanel {
             tableModel.addRow(new Object[]{
                 np.getMaNghiPhep(),
                 np.getHoten(),
-                np.getLoaiNghi(),
+                formatLoaiNghi(np.getLoaiNghi()), // Apply formatting
                 ngayBatDauStr,
                 ngayKetThucStr,
                 np.getLyDo(),
-                np.getTrangThai(),
+                formatTrangThai(np.getTrangThai()), // Apply formatting
                 ""
             });
+        }
+    }
+
+    // Helper method to format "Loai nghi"
+    private String formatLoaiNghi(String loaiNghi) {
+        if (loaiNghi == null) {
+            return "";
+        }
+        switch (loaiNghi) {
+            case "Nghi_phep_nam":
+                return "Nghỉ phép năm";
+            case "Nghi_om_dau":
+                return "Nghỉ ốm đau";
+            case "Nghi_thai_san":
+                return "Nghỉ thai sản";
+            case "Nghi_le":
+                return "Nghỉ lễ";
+            case "Nghi_khong_luong":
+                return "Nghỉ không lương";
+            // Add more cases if there are other types of leave
+            default:
+                // Replace underscores with spaces and capitalize first letter of each word
+                String formatted = loaiNghi.replace("_", " ").toLowerCase();
+                StringBuilder result = new StringBuilder();
+                boolean capitalizeNext = true;
+                for (char c : formatted.toCharArray()) {
+                    if (Character.isWhitespace(c)) {
+                        result.append(c);
+                        capitalizeNext = true;
+                    } else if (capitalizeNext) {
+                        result.append(Character.toUpperCase(c));
+                        capitalizeNext = false;
+                    } else {
+                        result.append(c);
+                    }
+                }
+                return result.toString();
+        }
+    }
+
+    // Helper method to format "Trang thai"
+    private String formatTrangThai(String trangThai) {
+        if (trangThai == null) {
+            return "";
+        }
+        switch (trangThai) {
+            case "Da_duyet":
+                return "Đã duyệt";
+            case "Cho_duyet":
+                return "Chờ duyệt";
+            case "Tu_choi":
+                return "Từ chối";
+            default:
+                // Replace underscores with spaces and capitalize first letter of each word
+                String formatted = trangThai.replace("_", " ").toLowerCase();
+                StringBuilder result = new StringBuilder();
+                boolean capitalizeNext = true;
+                for (char c : formatted.toCharArray()) {
+                    if (Character.isWhitespace(c)) {
+                        result.append(c);
+                        capitalizeNext = true;
+                    } else if (capitalizeNext) {
+                        result.append(Character.toUpperCase(c));
+                        capitalizeNext = false;
+                    } else {
+                        result.append(c);
+                    }
+                }
+                return result.toString();
         }
     }
 
@@ -582,7 +652,7 @@ public class NghiPhepView extends JPanel {
             infoPanel.add(lblHoTen);
 
             infoPanel.add(createLabel("Loại Nghỉ:", labelFont));
-            lblLoaiNghi = createLabel(nghiPhep.getLoaiNghi(), valueFont);
+            lblLoaiNghi = createLabel(formatLoaiNghi(nghiPhep.getLoaiNghi()), valueFont); // Apply formatting
             infoPanel.add(lblLoaiNghi);
 
             infoPanel.add(createLabel("Ngày Bắt Đầu:", labelFont));
@@ -598,7 +668,7 @@ public class NghiPhepView extends JPanel {
             infoPanel.add(lblLyDo);
 
             infoPanel.add(createLabel("Trạng Thái:", labelFont));
-            lblTrangThai = createLabel(nghiPhep.getTrangThai(), valueFont);
+            lblTrangThai = createLabel(formatTrangThai(nghiPhep.getTrangThai()), valueFont); // Apply formatting
             infoPanel.add(lblTrangThai);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
