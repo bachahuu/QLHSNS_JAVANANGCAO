@@ -1,8 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package view_nhanvien;
 
 import controller.LuongController;
@@ -18,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 /**
  * @author Windows
  */
@@ -36,7 +32,7 @@ public class ProfileLuongView extends JPanel {
         setLayout(new BorderLayout());
         initTopPanel();
         initTable();
-        loadLuongData(null);
+        loadLuongData(null); // Load dữ liệu ban đầu không lọc
     }
 
     private void initTopPanel() {
@@ -76,13 +72,21 @@ public class ProfileLuongView extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void loadLuongData(Date filterDate) {
-        tableModel.setRowCount(0);
+    // Hàm mới: Lấy toàn bộ dữ liệu lương từ cơ sở dữ liệu
+    private List<LuongModel> fetchLuongDataFromDatabase() {
         List<LuongModel> list = luongController.getAllByNhanVien(maNhanVien);
         if (list.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Không có dữ liệu lương hoặc lỗi kết nối cơ sở dữ liệu", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         }
+        return list;
+    }
+
+    // Hàm đã chỉnh sửa: Lọc và hiển thị dữ liệu lên bảng
+    private void loadLuongData(Date filterDate) {
+        tableModel.setRowCount(0); // Xóa bảng trước khi hiển thị dữ liệu mới
+        List<LuongModel> list = fetchLuongDataFromDatabase(); // Lấy dữ liệu từ database
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
         for (LuongModel l : list) {
             if (filterDate != null) {
                 Calendar cal1 = Calendar.getInstance();
@@ -92,7 +96,7 @@ public class ProfileLuongView extends JPanel {
                 if (cal1.get(Calendar.YEAR) != cal2.get(Calendar.YEAR) ||
                     cal1.get(Calendar.MONTH) != cal2.get(Calendar.MONTH) ||
                     cal1.get(Calendar.DAY_OF_MONTH) != cal2.get(Calendar.DAY_OF_MONTH)) {
-                    continue;
+                    continue; // Bỏ qua nếu ngày không khớp
                 }
             }
             tableModel.addRow(new Object[]{

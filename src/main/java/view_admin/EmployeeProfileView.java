@@ -225,7 +225,7 @@ public class EmployeeProfileView extends JPanel {
        List<NhanSuModel> nhanSuList = nhansu.getAll();
          for (NhanSuModel nhanSu : nhanSuList) {
             Object[] row = {
-                nhanSu.getMaSo(),
+                "NV" + nhanSu.getMaNhanVien(),
                 nhanSu.getHoTen(),
                 nhanSu.getGioiTinh(),
                 nhanSu.getNgaySinh() != null ? nhanSu.getNgaySinh().toString() : "",
@@ -255,7 +255,7 @@ public class EmployeeProfileView extends JPanel {
         tableModel.setRowCount(0);
         for (NhanSuModel nhanSu : filteredList) {
             Object[] row = {
-                nhanSu.getMaSo(),
+                "NV" + nhanSu.getMaNhanVien(),
                 nhanSu.getHoTen(),
                 nhanSu.getGioiTinh(),
                 nhanSu.getNgaySinh() != null ? nhanSu.getNgaySinh().toString() : "",
@@ -275,7 +275,7 @@ public class EmployeeProfileView extends JPanel {
         tableModel.setRowCount(0);
         for (NhanSuModel nhanSu : filteredList) {
             Object[] row = {
-                nhanSu.getMaSo(),
+                "NV" + nhanSu.getMaNhanVien(),
                 nhanSu.getHoTen(),
                 nhanSu.getGioiTinh(),
                 nhanSu.getNgaySinh() != null ? nhanSu.getNgaySinh().toString() : "",
@@ -360,21 +360,13 @@ public class EmployeeProfileView extends JPanel {
         // Tạo dialog
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(EmployeeProfileView.this), "Thêm nhân sự mới", true);
         dialog.setLayout(new BorderLayout());
-        dialog.setSize(1000, 700); // Tăng kích thước để chứa 2 cột
+        dialog.setSize(600, 500); // Tăng kích thước để chứa 2 cột
         dialog.setLocationRelativeTo(EmployeeProfileView.this);
 
         // Tạo panel chính chia làm 2 cột
-        JPanel mainPanel = new JPanel(new GridLayout(1, 2, 15, 15));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        // Panel thông tin nhân viên (bên trái)
         JPanel employeePanel = new JPanel(new GridLayout(12, 2, 10, 10));
         employeePanel.setBorder(BorderFactory.createTitledBorder("Thông tin nhân viên"));
-
-        // Panel thông tin hợp đồng (bên phải)
-        JPanel contractPanel = new JPanel(new GridBagLayout());
-        contractPanel.setBorder(BorderFactory.createTitledBorder("Thông tin hợp đồng"));
-
+        employeePanel.setBackground(Color.WHITE);
         // Font chữ
         Font labelFont = new Font("Arial", Font.PLAIN, 14);
         Font fieldFont = new Font("Arial", Font.PLAIN, 14);
@@ -383,12 +375,12 @@ public class EmployeeProfileView extends JPanel {
 
         // ========== PHẦN THÔNG TIN NHÂN VIÊN ==========
         // Mã nhân viên
-        JLabel maNhanVienLabel = new JLabel("Mã nhân viên:");
-        maNhanVienLabel.setFont(labelFont);
-        employeePanel.add(maNhanVienLabel);
-        JTextField maNhanVienField = new JTextField();
-        maNhanVienField.setFont(fieldFont);
-        employeePanel.add(maNhanVienField);
+//        JLabel maNhanVienLabel = new JLabel("Mã nhân viên:");
+//        maNhanVienLabel.setFont(labelFont);
+//        employeePanel.add(maNhanVienLabel);
+//        JTextField maNhanVienField = new JTextField();
+//        maNhanVienField.setFont(fieldFont);
+//        employeePanel.add(maNhanVienField);
 
         // Họ tên
         JLabel hoTenLabel = new JLabel("Họ và tên:");
@@ -517,128 +509,6 @@ public class EmployeeProfileView extends JPanel {
         tinhTrangComboBox.setFont(fieldFont);
         tinhTrangComboBox.setSelectedItem("Dang_lam");
         employeePanel.add(tinhTrangComboBox);
-
-        // ========== PHẦN THÔNG TIN HỢP ĐỒNG ==========
-        // Loại hợp đồng
-       
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5); // Padding giữa các thành phần
-        gbc.anchor = GridBagConstraints.WEST;
-
-        // Loại hợp đồng
-        JLabel loaiHopDongLabel = new JLabel("Loại hợp đồng:");
-        loaiHopDongLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        contractPanel.add(loaiHopDongLabel, gbc);
-
-        String[] loaiHopDongOptions = {"Thu_viec", "Chinh_thuc", "Thoi_vu"};
-        JComboBox<String> loaiHopDongComboBox = new JComboBox<>(loaiHopDongOptions);
-        loaiHopDongComboBox.setFont(fieldFont);
-        loaiHopDongComboBox.setPreferredSize(new Dimension(150, 25)); // Giới hạn kích thước
-        gbc.gridx = 1;
-        contractPanel.add(loaiHopDongComboBox, gbc);
-
-        // Ngày bắt đầu
-        JLabel ngayBatDauLabel = new JLabel("Ngày bắt đầu:");
-        ngayBatDauLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        contractPanel.add(ngayBatDauLabel, gbc);
-        // Tạo model cho JDatePicker (mặc định là ngày hôm nay)
-        UtilDateModel model_ngayBatDau = new UtilDateModel();
-        model_ngayBatDau.setSelected(true);
-        Properties p_ngayBatDau = new Properties();
-        p_ngayBatDau.put("text.today", "Hôm nay");
-        p_ngayBatDau.put("text.month", "Tháng");
-        p_ngayBatDau.put("text.year", "Năm");
-        JDatePanelImpl datePanel_ngayBatDau = new JDatePanelImpl(model_ngayBatDau, p_ngayBatDau);
-        JDatePickerImpl ngayBatDauPicker = new JDatePickerImpl(datePanel_ngayBatDau, new DateComponentFormatter());
-        ngayBatDauPicker.getJFormattedTextField().setFont(fieldFont);
-        ngayBatDauPicker.setPreferredSize(new Dimension(150, 25)); // Giới hạn kích thước
-        gbc.gridx = 1;
-        contractPanel.add(ngayBatDauPicker, gbc);
-
-        // Ngày kết thúc
-        JLabel ngayKetThucLabel = new JLabel("Ngày kết thúc:");
-        ngayKetThucLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        contractPanel.add(ngayKetThucLabel, gbc);
-        
-        // Tạo model cho JDatePicker (mặc định là ngày hôm nay)
-        UtilDateModel model_ngayKetThuc = new UtilDateModel();
-        model_ngayKetThuc.setSelected(true);
-        Properties p_ngayKetThuc = new Properties();
-        p_ngayKetThuc.put("text.today", "Hôm nay");
-        p_ngayKetThuc.put("text.month", "Tháng");
-        p_ngayKetThuc.put("text.year", "Năm");
-        JDatePanelImpl datePanel_ngayKetThuc = new JDatePanelImpl(model_ngayKetThuc, p_ngayKetThuc);
-        JDatePickerImpl ngayKetThucPicker = new JDatePickerImpl(datePanel_ngayKetThuc, new DateComponentFormatter());
-        ngayKetThucPicker.getJFormattedTextField().setFont(fieldFont);
-        ngayKetThucPicker.setPreferredSize(new Dimension(150, 25)); // Giới hạn kích thước
-        gbc.gridx = 1;
-        contractPanel.add(ngayKetThucPicker, gbc);
-
-        // Ngày ký
-        JLabel ngayKyLabel = new JLabel("Ngày ký:");
-        ngayKyLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        contractPanel.add(ngayKyLabel, gbc);
-        
-        // Tạo model cho JDatePicker (mặc định là ngày hôm nay)
-        UtilDateModel model_ngayKy = new UtilDateModel();
-        model_ngayKy.setSelected(true);
-        Properties p_ngayKy = new Properties();
-        p_ngayKy.put("text.today", "Hôm nay");
-        p_ngayKy.put("text.month", "Tháng");
-        p_ngayKy.put("text.year", "Năm");
-        JDatePanelImpl datePanel_ngayKy = new JDatePanelImpl(model_ngayKy, p_ngayKy);
-        JDatePickerImpl ngayKyPicker = new JDatePickerImpl(datePanel_ngayKy, new DateComponentFormatter());
-        ngayKyPicker.getJFormattedTextField().setFont(fieldFont);
-        ngayKyPicker.setPreferredSize(new Dimension(150, 25)); // Giới hạn kích thước
-        gbc.gridx = 1;
-        contractPanel.add(ngayKyPicker, gbc);
-
-        // Trạng thái hợp đồng
-        JLabel trangThaiHopDongLabel = new JLabel("Trạng thái hợp đồng:");
-        trangThaiHopDongLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        contractPanel.add(trangThaiHopDongLabel, gbc);
-
-        String[] trangThaiHopDongOptions = {"Con_hieu_luc", "Het_hieu_luc"};
-        JComboBox<String> trangThaiHopDongComboBox = new JComboBox<>(trangThaiHopDongOptions);
-        trangThaiHopDongComboBox.setFont(fieldFont);
-        trangThaiHopDongComboBox.setPreferredSize(new Dimension(150, 25)); // Giới hạn kích thước
-        trangThaiHopDongComboBox.setSelectedItem("Con_hieu_luc");
-        gbc.gridx = 1;
-        contractPanel.add(trangThaiHopDongComboBox, gbc);
-
-        // Lương cơ bản
-        JLabel luongCoBanLabel = new JLabel("Lương cơ bản:");
-        luongCoBanLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        contractPanel.add(luongCoBanLabel, gbc);
-
-        JTextField luongCoBanField = new JTextField();
-        luongCoBanField.setFont(fieldFont);
-        luongCoBanField.setPreferredSize(new Dimension(150, 25)); // Giới hạn kích thước
-        gbc.gridx = 1;
-        contractPanel.add(luongCoBanField, gbc);
-
-        // Thêm khoảng trống để tránh tràn layout (nếu cần)
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        gbc.weighty = 1.0; // Đẩy các thành phần lên trên, chừa khoảng trống phía dưới
-        contractPanel.add(new JLabel(), gbc);
-
-        // Thêm 2 panel vào main panel
-        mainPanel.add(employeePanel);
-        mainPanel.add(contractPanel);
-
         // Panel chứa các nút button
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
@@ -651,7 +521,7 @@ public class EmployeeProfileView extends JPanel {
             // Xử lý lưu dữ liệu ở đây
             try {
                 // Lấy dữ liệu từ các field
-                String maSo = maNhanVienField.getText().trim();
+//                String maSo = maNhanVienField.getText().trim();
                 String hoTen = hoTenField.getText().trim();
                 String gioiTinh = (String) gioiTinhComboBox.getSelectedItem();
                 // Lấy ngày thành lập từ date picker
@@ -688,39 +558,19 @@ public class EmployeeProfileView extends JPanel {
                     JOptionPane.showMessageDialog(dialog, "Họ tên không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                // Lấy dữ liệu hợp đồng
-                String loaiHopDong = (String) loaiHopDongComboBox.getSelectedItem();
-                Date selectedDate_ngayBatDau = (Date) ngayBatDauPicker.getModel().getValue();
-                    if (ngayBatDauPicker == null) {
-                        JOptionPane.showMessageDialog(dialog, "Vui lòng chọn ngày ngày bắt đầu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                java.sql.Date ngayBatDau = new java.sql.Date(selectedDate_ngayBatDau.getTime());
-                // Lấy ngày kết thúc từ date picker
-                Date selectedDate_ngayKetThuc = (Date) ngayKetThucPicker.getModel().getValue();
-                    if (ngayKetThucPicker == null) {
-                        JOptionPane.showMessageDialog(dialog, "Vui lòng chọn ngày kết thúc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                java.sql.Date ngayKetThuc = new java.sql.Date(selectedDate_ngayKetThuc.getTime());
-                // Lấy ngày ký từ date picker
-                Date selectedDate_ngayKy = (Date) ngayKyPicker.getModel().getValue();
-                    if (ngayKyPicker == null) {
-                        JOptionPane.showMessageDialog(dialog, "Vui lòng chọn ngày ký!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                java.sql.Date ngayKy = new java.sql.Date(selectedDate_ngayKy.getTime());
-                String trangThaiHopDong = (String) trangThaiHopDongComboBox.getSelectedItem();
-                String luongCoBanStr = luongCoBanField.getText().trim();
-                // Xác thực dữ liệu hợp đồng
-                if (luongCoBanStr.isEmpty() || !luongCoBanStr.matches("\\d+(\\.\\d+)?")) {
-                    JOptionPane.showMessageDialog(dialog, "Lương cơ bản phải là số hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                if (email.isEmpty() || !email.contains("@")) {
+                    JOptionPane.showMessageDialog(dialog, "Email không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                if (soDienThoai.isEmpty() || !soDienThoai.matches("\\d{10,11}")) {
+                    JOptionPane.showMessageDialog(dialog, "Số điện thoại phải có 10-11 chữ số!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+              
 
                 // Tạo đối tượng NhanSuModel và lưu vào database
                 NhanSuModel newNhanSu = new NhanSuModel();
-                newNhanSu.setMaSo(maSo);
+//                newNhanSu.setMaSo(maSo);
                 newNhanSu.setHoTen(hoTen);
                 newNhanSu.setGioiTinh(gioiTinh);
                 newNhanSu.setNgaySinh(ngaySinh);
@@ -733,17 +583,8 @@ public class EmployeeProfileView extends JPanel {
                 newNhanSu.setNgayVaoLam(ngayVaoLam);
                 newNhanSu.setTinhTrang(tinhTrang);
                 
-                // Tạo đối tượng ContractModel
-                ContractModel newContract = new ContractModel();
-                newContract.setLoaiHopDong(ContractModel.LoaiHopDong.valueOf(loaiHopDong));
-                newContract.setNgayBatDau(ngayBatDau);
-                newContract.setNgayKetThuc(ngayKetThuc);
-                newContract.setNgayKy(ngayKy);
-                newContract.setTrangThai(ContractModel.TrangThaiHopDong.valueOf(trangThaiHopDong));
-                newContract.setLuongCoBan(new BigDecimal(luongCoBanStr));
-                
-
-                boolean success = nhansu.insertNhanVienAndContract(newNhanSu,newContract);
+               
+                boolean success = nhansu.insertNhanVien(newNhanSu);
 
                 if (success) {
                     JOptionPane.showMessageDialog(dialog, "Thêm nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
@@ -769,7 +610,7 @@ public class EmployeeProfileView extends JPanel {
         buttonPanel.add(cancelButton);
 
         // Thêm các panel vào dialog
-        dialog.add(mainPanel, BorderLayout.CENTER);
+        dialog.add(employeePanel, BorderLayout.CENTER);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
         // Hiển thị dialog
@@ -816,19 +657,21 @@ public class EmployeeProfileView extends JPanel {
                 cell.setCellValue(headers[i]);
             }
             // Lấy dữ liệu từ tableModel
-            List<NhanSuModel> nhanSuList = new ArrayList<>();
+            
             nhansu = new nhanSuController();
-            List<NhanSuModel> allNhanSu = nhansu.getAll(); // Lấy toàn bộ danh sách để tìm kiếm
-            for (int i = 0; i < tableModel.getRowCount(); i++) {
-                String maSo = (String) tableModel.getValueAt(i, 0);
-                // Tìm NhanSuModel tương ứng với maSo
-                for (NhanSuModel nhanSu : allNhanSu) {
-                    if (nhanSu.getMaSo().equals(maSo)) {
-                        nhanSuList.add(nhanSu);
-                        break;
-                    }
-                }
-            }
+            List<NhanSuModel> nhanSuList = new ArrayList<>();
+            nhanSuList = nhansu.getAll();
+//            List<NhanSuModel> allNhanSu = nhansu.getAll(); // Lấy toàn bộ danh sách để tìm kiếm
+//            for (int i = 0; i < tableModel.getRowCount(); i++) {
+//                String maSo = (String) tableModel.getValueAt(i, 0);
+//                // Tìm NhanSuModel tương ứng với maSo
+//                for (NhanSuModel nhanSu : allNhanSu) {
+//                    if (nhanSu.getMaSo().equals(maSo)) {
+//                        nhanSuList.add(nhanSu);
+//                        break;
+//                    }
+//                }
+//            }
             
 
             // Điền dữ liệu
@@ -842,7 +685,7 @@ public class EmployeeProfileView extends JPanel {
 
                 // Mã NV
                 cell = row.createCell(1, CellType.STRING);
-                cell.setCellValue(nhanSu.getMaSo() != null ? nhanSu.getMaSo() : "");
+                cell.setCellValue("NV" + nhanSu.getMaNhanVien());
 
                 // Họ và tên
                 cell = row.createCell(2, CellType.STRING);
@@ -983,18 +826,9 @@ public class EmployeeProfileView extends JPanel {
                             fireEditingStopped();
                             return;
                         }
-                        // Lấy mã số từ cột 0
-                        String maSo = (String) tableModel.getValueAt(row, 0);
-
-                        // Tìm NhanSuModel tương ứng
-                        List<NhanSuModel> nhanSuList = nhansu.getAll();
-                        NhanSuModel selectedNhanSu = null;
-                        for (NhanSuModel nhanSu : nhanSuList) {
-                            if (nhanSu.getMaSo().equals(maSo)) {
-                                selectedNhanSu = nhanSu;
-                                break;
-                            }
-                        }
+                        String maNhanVienStr = (String) tableModel.getValueAt(row, 0);
+                        int maNhanVien = Integer.parseInt(maNhanVienStr.replace("NV", ""));
+                        NhanSuModel selectedNhanSu = nhansu.getById(maNhanVien);
 
                         if (selectedNhanSu == null) {
                             JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin nhân viên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -1005,7 +839,7 @@ public class EmployeeProfileView extends JPanel {
                         // Xác nhận xóa
                         int confirm = JOptionPane.showConfirmDialog(
                             null,
-                            "Bạn có chắc muốn xóa nhân viên: " + selectedNhanSu.getHoTen() + " (Mã: " + maSo + ")?",
+                            "Bạn có chắc muốn xóa nhân viên: " + selectedNhanSu.getHoTen() + " (Mã: NV" + maNhanVien + ")?",
                             "Xác nhận xóa",
                             JOptionPane.YES_NO_OPTION
                         );
@@ -1048,15 +882,10 @@ public class EmployeeProfileView extends JPanel {
         private void showDetailDialog(int row){
             
              // Lấy mã nhân viên từ cột 0
-            String maSo = (String) tableModel.getValueAt(row, 0);
-            List<NhanSuModel> nhanSuList = nhansu.getAll();
-            NhanSuModel selectedNhanSu = null;
-            for (NhanSuModel nhanSu : nhanSuList) {
-                if (nhanSu.getMaSo().equals(maSo)) {
-                    selectedNhanSu = nhanSu;
-                    break;
-                }
-            }
+//            String maSo = (String) tableModel.getValueAt(row, 0);
+            String maNhanVienStr = (String) tableModel.getValueAt(row, 0);
+            int maNhanVien = Integer.parseInt(maNhanVienStr.replace("NV", ""));
+            NhanSuModel selectedNhanSu = nhansu.getById(maNhanVien);
 
             if (selectedNhanSu == null) {
                 JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin nhân viên!");
@@ -1078,7 +907,7 @@ public class EmployeeProfileView extends JPanel {
             JLabel maNhanVienLabel = new JLabel("Mã nhân viên:");
             maNhanVienLabel.setFont(labelFont);
             dialog.add(maNhanVienLabel);
-            JTextField maNhanVienField = new JTextField(selectedNhanSu.getMaSo());
+            JTextField maNhanVienField = new JTextField("NV" + selectedNhanSu.getMaNhanVien());
             maNhanVienField.setFont(fieldFont);
             maNhanVienField.setEditable(false);
             dialog.add(maNhanVienField);
@@ -1214,15 +1043,9 @@ public class EmployeeProfileView extends JPanel {
         //editdialog
         private void editDetailDialog(int row){
              // Lấy mã nhân viên từ cột 0
-            String maSo = (String) tableModel.getValueAt(row, 0);
-            List<NhanSuModel> nhanSuList = nhansu.getAll();
-            selectedNhanSu = null;
-            for (NhanSuModel nhanSu : nhanSuList) {
-                if (nhanSu.getMaSo().equals(maSo)) {
-                    selectedNhanSu = nhanSu;
-                    break;
-                }
-            }
+            String maNhanVienStr = (String) tableModel.getValueAt(row, 0);
+            int maNhanVien = Integer.parseInt(maNhanVienStr.replace("NV", ""));
+            NhanSuModel selectedNhanSu = nhansu.getById(maNhanVien);
 
             if (selectedNhanSu == null) {
                 JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin nhân viên!");
@@ -1244,7 +1067,7 @@ public class EmployeeProfileView extends JPanel {
             JLabel maNhanVienLabel = new JLabel("Mã nhân viên:");
             maNhanVienLabel.setFont(labelFont);
             dialog.add(maNhanVienLabel);
-            JTextField maNhanVienField = new JTextField(selectedNhanSu.getMaSo());
+            JTextField maNhanVienField = new JTextField("NV" + selectedNhanSu.getMaNhanVien());
             maNhanVienField.setFont(fieldFont);
             maNhanVienField.setEditable(false);
             dialog.add(maNhanVienField);

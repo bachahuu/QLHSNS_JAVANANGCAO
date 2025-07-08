@@ -267,10 +267,9 @@ public class nhanSuController {
         }
         return list;
     }
-     public boolean insertNhanVienAndContract(NhanSuModel nhanSu, ContractModel contract) {
+     public boolean insertNhanVien(NhanSuModel nhanSu) {
         Connection conn = null;
         Statement stmt = null;
-        ResultSet generatedKeys = null;
 
         try {
             Connect mc = new Connect();
@@ -310,35 +309,6 @@ public class nhanSuController {
                 stmt = conn.createStatement();
                 stmt.executeUpdate(sqlNhanVien, Statement.RETURN_GENERATED_KEYS);
 
-                // Lấy ma_nhan_vien vừa tạo
-                generatedKeys = stmt.getGeneratedKeys();
-                int maNhanVien = 0;
-                if (generatedKeys.next()) {
-                    maNhanVien = generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Không thể lấy ma_nhan_vien!");
-                }
-
-                // Chuẩn bị các giá trị cho hop_dong
-                String loaiHopDong = contract.getLoaiHopDong() != null ? "'" + contract.getLoaiHopDong().name() + "'" : "NULL";
-                String ngayBatDau = contract.getNgayBatDau() != null ? "'" + contract.getNgayBatDau().toString() + "'" : "NULL";
-                String ngayKetThuc = contract.getNgayKetThuc() != null ? "'" + contract.getNgayKetThuc().toString() + "'" : "NULL";
-                String ngayKy = contract.getNgayKy() != null ? "'" + contract.getNgayKy().toString() + "'" : "NULL";
-                String trangThai = contract.getTrangThai() != null ? "'" + contract.getTrangThai().name() + "'" : "'Con_hieu_luc'";
-                String luongCoBan = contract.getLuongCoBan() != null ? "'" + contract.getLuongCoBan().toString() + "'" : "NULL";
-
-                // Câu lệnh SQL cho hop_dong
-                String sqlHopDong = "INSERT INTO hop_dong (ma_nhan_vien, loai_hop_dong, ngay_bat_dau, ngay_ket_thuc, ngay_ky, trang_thai, luong_co_ban) VALUES (" +
-                                  maNhanVien + ", " +
-                                  loaiHopDong + ", " +
-                                  ngayBatDau + ", " +
-                                  ngayKetThuc + ", " +
-                                  ngayKy + ", " +
-                                  trangThai + ", " +
-                                  luongCoBan + ")";
-
-                stmt.executeUpdate(sqlHopDong);
-
                 conn.commit(); // Hoàn tất giao dịch
                 return true;
             }
@@ -352,15 +322,7 @@ public class nhanSuController {
             }
             e.printStackTrace();
             return false;
-        } finally {
-            try {
-                if (generatedKeys != null) generatedKeys.close();
-                if (stmt != null) stmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        } 
         return false;
     }
      public boolean updateNhanVien(NhanSuModel nhanSu) {

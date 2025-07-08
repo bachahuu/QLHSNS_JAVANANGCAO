@@ -45,7 +45,7 @@ public class ProfileView extends JPanel {
         JLabel maNhanVienLabel = new JLabel("Mã nhân viên:");
         maNhanVienLabel.setFont(labelFont);
         employeePanel.add(maNhanVienLabel);
-        JTextField maNhanVienField = new JTextField(nhanVien.getMaSo());
+        JTextField maNhanVienField = new JTextField("NV"+nhanVien.getMaNhanVien());
         maNhanVienField.setFont(fieldFont);
         maNhanVienField.setEditable(false);
         maNhanVienField.setHorizontalAlignment(JTextField.CENTER);

@@ -52,7 +52,6 @@ public class NhanvienView extends JFrame {
     private NhanSuModel nhanVien;
     private ContractModel hopDong;
     private final String[] menuItems = {
-        "🏠 Trang Chủ",
         "👤 Thông Tin Cá Nhân",
         "💰 Lương & Phụ Cấp"
     };
@@ -213,9 +212,6 @@ public class NhanvienView extends JFrame {
         System.out.println("Đã chuyển đến tab: " + selectedTab);
         
         switch (selectedTab.trim()) {
-            case "🏠 Trang Chủ":
-                handleHomeTab();
-                break;
             case "👤 Thông Tin Cá Nhân": // Thêm xử lý cho Quản Lý Tài Khoản
                 handleAccountTab();
                 break;
@@ -228,9 +224,6 @@ public class NhanvienView extends JFrame {
     }
 
     // Các phương thức xử lý riêng cho từng tab
-    private void handleHomeTab() {
-        System.out.println("=== XỬ LÝ TAB TRANG CHỦ ===");
-    }
     private void handleAccountTab() {
         System.out.println("=== XỬ LÝ TAB Thông Tin Cá Nhân ===");
         String key = "👤 Thông Tin Cá Nhân".trim();
@@ -319,10 +312,10 @@ public class NhanvienView extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            int maNhanVien = 1;
-            new NhanvienView(maNhanVien).setVisible(true);
-        });
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            int maNhanVien = 1;
+//            new NhanvienView(maNhanVien).setVisible(true);
+//        });
+//    }
 }

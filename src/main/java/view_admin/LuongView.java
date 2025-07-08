@@ -106,5 +106,15 @@ public class LuongView extends JPanel {
         if (row == -1) return -1;
         return (int) table.getValueAt(row, 0);
     }
+    public void clearFormFields() {
+    tfMaNV.setText("");
+    tfNgayLuong.setText("");
+    tfNgayCong.setText("");
+    tfTangCa.setText("");
+    tfThuong.setText("");
+    tfPhuCap.setText("");
+    tfKhauTru.setText("");
+    tfSearch.setText("");
+}
 
 }

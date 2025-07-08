@@ -28,7 +28,6 @@ public class mainActivityView extends JFrame {
     private DefaultListModel<String> menuModel;
 
     private final String[] menuItems = {
-        "🏠 Trang Chủ",
         "👤 Quản Lý Tài Khoản", 
         "👤 Hồ Sơ Nhân Sự",
         "🏢 Phòng Ban",
@@ -187,9 +186,6 @@ public class mainActivityView extends JFrame {
         System.out.println("Đã chuyển đến tab: " + selectedTab);
         
         switch (selectedTab.trim()) {
-            case "🏠 Trang Chủ":
-                handleHomeTab();
-                break;
             case "👤 Quản Lý Tài Khoản": // Thêm xử lý cho Quản Lý Tài Khoản
                 handleAccountTab();
                 break;
@@ -219,9 +215,6 @@ public class mainActivityView extends JFrame {
     }
 
     // Các phương thức xử lý riêng cho từng tab
-    private void handleHomeTab() {
-        System.out.println("=== XỬ LÝ TAB TRANG CHỦ ===");
-    }
     private void handleAccountTab() {
         System.out.println("=== XỬ LÝ TAB TÀI KHOẢN ===");
         String key = "👤 Quản Lý Tài Khoản".trim();
@@ -418,9 +411,9 @@ public class mainActivityView extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new mainActivityView().setVisible(true);
-        });
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            new mainActivityView().setVisible(true);
+//        });
+//    }
 }

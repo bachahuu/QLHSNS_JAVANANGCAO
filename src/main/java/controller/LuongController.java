@@ -6,6 +6,7 @@ import view_admin.LuongView;
 import javax.swing.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,84 +24,54 @@ public class LuongController {
         loadData();
     }
 
-    public LuongController() {
-    }
-    
-   // Lấy tất cả lương của một nhân viên
-    public List<LuongModel> getAllByNhanVien(int maNhanVien) {
-        List<LuongModel> list = new ArrayList<>();
-        Connection localConn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+    public LuongController() {}
+
+    // Tính lương thực nhận từ CSDL
+    public BigDecimal calculateLuongThucNhan(int maLuong) {
+        BigDecimal result = BigDecimal.ZERO;
 
         try {
-            Connect mc = new Connect();
-            localConn = mc.getConnection(); // Tạo Connection
-            if (localConn == null) {
-                System.out.println("Kết nối cơ sở dữ liệu thất bại");
-                return list;
-            }
-            String query = "SELECT * FROM luong WHERE ma_nhan_vien = ?";
-            pstmt = localConn.prepareStatement(query);
-            pstmt.setInt(1, maNhanVien);
-            rs = pstmt.executeQuery();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM luong WHERE ma_luong = ?");
+            ps.setInt(1, maLuong);
+            ResultSet rs = ps.executeQuery();
 
-            while (rs.next()) {
-                LuongModel luong = new LuongModel();
-                luong.setMaLuong(rs.getInt("ma_luong"));
-                luong.setMaNhanVien(rs.getInt("ma_nhan_vien"));
-                luong.setNgayTinhLuong(rs.getDate("ngay_tinh_luong"));
-                luong.setSoNgayCong(rs.getInt("so_ngay_cong"));
-                luong.setSoGioTangCa(rs.getInt("so_gio_tang_ca"));
-                luong.setTienThuong(rs.getBigDecimal("tien_thuong"));
-                luong.setTongPhuCap(rs.getBigDecimal("tong_phu_cap"));
-                luong.setTongKhauTru(rs.getBigDecimal("tong_khau_tru"));
-                luong.setLuongThucNhan(rs.getBigDecimal("luong_thuc_nhan"));
-                list.add(luong);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (pstmt != null) pstmt.close();
-                if (localConn != null) localConn.close(); // Đóng Connection
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return list;
-    }
-    // Lấy lương cơ bản của nhân viên đang còn hiệu lực
-    public BigDecimal getLuongCoBanByNhanVien(int maNhanVien) {
-        BigDecimal luongCoBan = BigDecimal.ZERO;
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
-            Connect mc = new Connect();
-            conn = mc.getConnection();
-            String sql = "SELECT luong_co_ban FROM hop_dong WHERE ma_nhan_vien = ? ";
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, maNhanVien);
-            rs = ps.executeQuery();
             if (rs.next()) {
-                luongCoBan = rs.getBigDecimal("luong_co_ban");
+                int maNhanVien = rs.getInt("ma_nhan_vien");
+                int soNgayCong = rs.getInt("so_ngay_cong");
+                int soGioTangCa = rs.getInt("so_gio_tang_ca");
+                BigDecimal tienThuong = rs.getBigDecimal("tien_thuong");
+                BigDecimal tongPhuCap = rs.getBigDecimal("tong_phu_cap");
+                BigDecimal tongKhauTru = rs.getBigDecimal("tong_khau_tru");
+
+                PreparedStatement ps2 = conn.prepareStatement("SELECT luong_co_ban FROM hop_dong WHERE ma_nhan_vien = ?");
+                ps2.setInt(1, maNhanVien);
+                ResultSet rs2 = ps2.executeQuery();
+
+                BigDecimal luongCoBan = BigDecimal.ZERO;
+                if (rs2.next()) {
+                    luongCoBan = rs2.getBigDecimal("luong_co_ban");
+                }
+
+                rs2.close();
+                ps2.close();
+
+                BigDecimal luongNgay = luongCoBan.divide(new BigDecimal(26), RoundingMode.HALF_UP);
+                BigDecimal tienTangCa = new BigDecimal(soGioTangCa * 40000);
+
+                result = luongNgay.multiply(new BigDecimal(soNgayCong))
+                        .add(tienTangCa)
+                        .add(tienThuong)
+                        .add(tongPhuCap)
+                        .subtract(tongKhauTru);
             }
+
+            rs.close();
+            ps.close();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (ps != null) ps.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
 
-        return luongCoBan;
+        return result;
     }
 
     private void initController() {
@@ -108,29 +79,11 @@ public class LuongController {
         view.getBtnUpdate().addActionListener(e -> updateLuong());
         view.getBtnDelete().addActionListener(e -> deleteLuong());
         view.getBtnSearch().addActionListener(e -> searchLuong());
-        view.getBtnRefresh().addActionListener(e -> loadData());
+        view.getBtnRefresh().addActionListener(e -> {
+            view.clearFormFields();  // xóa trắng form
+            loadData();              // load lại bảng
+        });
         view.getTable().getSelectionModel().addListSelectionListener(e -> fillFormFromTable());
-    }
-
-    private BigDecimal fetchLuongCoBan(int maNhanVien) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT luong_co_ban FROM hop_dong WHERE ma_nhan_vien = ?");
-        ps.setInt(1, maNhanVien);
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()) {
-            return rs.getBigDecimal("luong_co_ban");
-        }
-        return BigDecimal.ZERO;
-    }
-
-    private BigDecimal calculateLuong(int maNV, int ngayCong, int gioTC, BigDecimal thuong, BigDecimal phuCap, BigDecimal khauTru) throws SQLException {
-        BigDecimal luongCoBan = fetchLuongCoBan(maNV);
-        BigDecimal luongNgay = luongCoBan.divide(new BigDecimal(26), BigDecimal.ROUND_HALF_UP);
-        BigDecimal tienTangCa = new BigDecimal(gioTC * 40000);
-        return luongNgay.multiply(new BigDecimal(ngayCong))
-                .add(tienTangCa)
-                .add(thuong)
-                .add(phuCap)
-                .subtract(khauTru);
     }
 
     private void insertLuong() {
@@ -142,9 +95,21 @@ public class LuongController {
             BigDecimal thuong = view.getTienThuong();
             BigDecimal phuCap = view.getTongPhuCap();
             BigDecimal khauTru = view.getTongKhauTru();
-            BigDecimal thucNhan = calculateLuong(maNV, ngayCong, gioTC, thuong, phuCap, khauTru);
 
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO luong (ma_nhan_vien, ngay_tinh_luong, so_ngay_cong, so_gio_tang_ca, tien_thuong, tong_phu_cap, tong_khau_tru, luong_thuc_nhan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            // Kiểm tra trùng nhân viên + ngày tính lương
+            PreparedStatement check = conn.prepareStatement(
+                "SELECT COUNT(*) FROM luong WHERE ma_nhan_vien = ? AND ngay_tinh_luong = ?");
+            check.setInt(1, maNV);
+            check.setDate(2, sqlDate);
+            ResultSet rsCheck = check.executeQuery();
+
+            if (rsCheck.next() && rsCheck.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(null, "❌ Nhân viên đã có bảng lương trong ngày này!");
+                return;
+            }
+
+            PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO luong (ma_nhan_vien, ngay_tinh_luong, so_ngay_cong, so_gio_tang_ca, tien_thuong, tong_phu_cap, tong_khau_tru) VALUES (?, ?, ?, ?, ?, ?, ?)");
             ps.setInt(1, maNV);
             ps.setDate(2, sqlDate);
             ps.setInt(3, ngayCong);
@@ -152,9 +117,9 @@ public class LuongController {
             ps.setBigDecimal(5, thuong);
             ps.setBigDecimal(6, phuCap);
             ps.setBigDecimal(7, khauTru);
-            ps.setBigDecimal(8, thucNhan);
             ps.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Thêm thành công");
+
+            JOptionPane.showMessageDialog(null, "✅ Thêm thành công");
             loadData();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -171,9 +136,9 @@ public class LuongController {
             BigDecimal thuong = view.getTienThuong();
             BigDecimal phuCap = view.getTongPhuCap();
             BigDecimal khauTru = view.getTongKhauTru();
-            BigDecimal thucNhan = calculateLuong(maNV, ngayCong, gioTC, thuong, phuCap, khauTru);
 
-            PreparedStatement ps = conn.prepareStatement("UPDATE luong SET ma_nhan_vien=?, ngay_tinh_luong=?, so_ngay_cong=?, so_gio_tang_ca=?, tien_thuong=?, tong_phu_cap=?, tong_khau_tru=?, luong_thuc_nhan=? WHERE ma_luong=?");
+            PreparedStatement ps = conn.prepareStatement(
+                "UPDATE luong SET ma_nhan_vien=?, ngay_tinh_luong=?, so_ngay_cong=?, so_gio_tang_ca=?, tien_thuong=?, tong_phu_cap=?, tong_khau_tru=? WHERE ma_luong=?");
             ps.setInt(1, maNV);
             ps.setDate(2, sqlDate);
             ps.setInt(3, ngayCong);
@@ -181,10 +146,10 @@ public class LuongController {
             ps.setBigDecimal(5, thuong);
             ps.setBigDecimal(6, phuCap);
             ps.setBigDecimal(7, khauTru);
-            ps.setBigDecimal(8, thucNhan);
-            ps.setInt(9, maLuong);
+            ps.setInt(8, maLuong);
             ps.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Cập nhật thành công");
+
+            JOptionPane.showMessageDialog(null, "✅ Cập nhật thành công");
             loadData();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -197,7 +162,7 @@ public class LuongController {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM luong WHERE ma_luong=?");
             ps.setInt(1, maLuong);
             ps.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Xoá thành công");
+            JOptionPane.showMessageDialog(null, "✅ Xoá thành công");
             loadData();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -207,21 +172,30 @@ public class LuongController {
     private void searchLuong() {
         try {
             String keyword = view.getSearchKeyword();
-            PreparedStatement ps = conn.prepareStatement("SELECT l.ma_luong, n.ho_ten, l.luong_thuc_nhan FROM luong l JOIN nhan_vien n ON l.ma_nhan_vien = n.ma_nhan_vien WHERE n.ho_ten LIKE ?");
+            PreparedStatement ps = conn.prepareStatement(
+                "SELECT l.ma_luong, n.ho_ten FROM luong l JOIN nhan_vien n ON l.ma_nhan_vien = n.ma_nhan_vien WHERE n.ho_ten LIKE ?");
             ps.setString(1, "%" + keyword + "%");
             ResultSet rs = ps.executeQuery();
+
             Vector<String> column = new Vector<>();
             column.add("Mã Lương");
             column.add("Tên Nhân Viên");
             column.add("Lương Thực Nhận");
+
             Vector<Vector<Object>> data = new Vector<>();
+
             while (rs.next()) {
+                int maLuong = rs.getInt("ma_luong");
+                String tenNV = rs.getString("ho_ten");
+                BigDecimal thucNhan = calculateLuongThucNhan(maLuong);
+
                 Vector<Object> row = new Vector<>();
-                row.add(rs.getInt("ma_luong"));
-                row.add(rs.getString("ho_ten"));
-                row.add(rs.getBigDecimal("luong_thuc_nhan"));
+                row.add(maLuong);
+                row.add(tenNV);
+                row.add(thucNhan);
                 data.add(row);
             }
+
             view.loadTable(data, column);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -230,20 +204,29 @@ public class LuongController {
 
     private void loadData() {
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT l.ma_luong, n.ho_ten, l.luong_thuc_nhan FROM luong l JOIN nhan_vien n ON l.ma_nhan_vien = n.ma_nhan_vien");
+            PreparedStatement ps = conn.prepareStatement(
+                "SELECT l.ma_luong, n.ho_ten FROM luong l JOIN nhan_vien n ON l.ma_nhan_vien = n.ma_nhan_vien");
             ResultSet rs = ps.executeQuery();
+
             Vector<String> column = new Vector<>();
             column.add("Mã Lương");
             column.add("Tên Nhân Viên");
             column.add("Lương Thực Nhận");
+
             Vector<Vector<Object>> data = new Vector<>();
+
             while (rs.next()) {
+                int maLuong = rs.getInt("ma_luong");
+                String tenNV = rs.getString("ho_ten");
+                BigDecimal thucNhan = calculateLuongThucNhan(maLuong);
+
                 Vector<Object> row = new Vector<>();
-                row.add(rs.getInt("ma_luong"));
-                row.add(rs.getString("ho_ten"));
-                row.add(rs.getBigDecimal("luong_thuc_nhan"));
+                row.add(maLuong);
+                row.add(tenNV);
+                row.add(thucNhan);
                 data.add(row);
             }
+
             view.loadTable(data, column);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -272,5 +255,48 @@ public class LuongController {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    // Nếu cần lấy danh sách lương theo nhân viên
+    public List<LuongModel> getAllByNhanVien(int maNhanVien) {
+        List<LuongModel> list = new ArrayList<>();
+        Connection localConn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Connect mc = new Connect();
+            localConn = mc.getConnection();
+            if (localConn == null) return list;
+
+            String query = "SELECT * FROM luong WHERE ma_nhan_vien = ?";
+            pstmt = localConn.prepareStatement(query);
+            pstmt.setInt(1, maNhanVien);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                LuongModel luong = new LuongModel();
+                luong.setMaLuong(rs.getInt("ma_luong"));
+                luong.setMaNhanVien(rs.getInt("ma_nhan_vien"));
+                luong.setNgayTinhLuong(rs.getDate("ngay_tinh_luong"));
+                luong.setSoNgayCong(rs.getInt("so_ngay_cong"));
+                luong.setSoGioTangCa(rs.getInt("so_gio_tang_ca"));
+                luong.setTienThuong(rs.getBigDecimal("tien_thuong"));
+                luong.setTongPhuCap(rs.getBigDecimal("tong_phu_cap"));
+                luong.setTongKhauTru(rs.getBigDecimal("tong_khau_tru"));
+                list.add(luong);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (localConn != null) localConn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
     }
 }
