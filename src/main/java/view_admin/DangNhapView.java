@@ -130,6 +130,7 @@ public class DangNhapView extends JFrame {
         add(mainPanel);
 
         // Xử lý sự kiện nút Đăng nhập
+        // Xử lý sự kiện nút Đăng nhập
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -143,6 +144,13 @@ public class DangNhapView extends JFrame {
 
                 TaiKhoanModel taiKhoan = taiKhoanController.getByTenDangNhap(username);
                 if (taiKhoan != null && taiKhoan.getMatKhau() != null) {
+
+                    // BỔ SUNG KIỂM TRA TRẠNG THÁI TÀI KHOẢN
+                    if (!"Hoat_dong".equalsIgnoreCase(taiKhoan.getTrangThai())) {
+                        JOptionPane.showMessageDialog(DangNhapView.this, "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên!", "Tài khoản bị khóa", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
                     try {
                         // Giải mã Base64 để lấy salt và hash đã lưu
                         byte[] saltAndHash = Base64.getDecoder().decode(taiKhoan.getMatKhau());
@@ -158,9 +166,7 @@ public class DangNhapView extends JFrame {
 
                         // So sánh hash
                         if (MessageDigest.isEqual(storedHash, inputHashedBytes)) {
-//                            JOptionPane.showMessageDialog(DangNhapView.this, "Đăng nhập thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                             dispose(); // Đóng form đăng nhập
-                            // Lấy vai trò từ object taiKhoan đã được query từ DB
                             String vaiTro = taiKhoan.getVaiTro();
                             if ("Quan_tri".equals(vaiTro)) {
                                 new mainActivityView().setVisible(true);
